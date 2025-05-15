@@ -1,7 +1,7 @@
 const mysqlConnection = require("../config/mySql.js");
 const connectSQL = require("../config/sqlServer.js");
 const sql = require("mssql");
-
+const bcrypt = require("bcrypt");
 exports.login = (req, res) => {
   const { username, password } = req.body;
 
@@ -9,25 +9,76 @@ exports.login = (req, res) => {
     SELECT AccountID, Username, RoleID, EmployeeID, Password FROM account WHERE Username = ?
   `;
 
-  mysqlConnection.query(query, [username], (err, results) => {
+  mysqlConnection.query(query, [username], async (err, results) => {
     if (err)
       return res.status(500).json({ message: "Lỗi máy chủ.", error: err });
+
     if (results.length === 0)
       return res.status(404).json({ message: "Tài khoản không tồn tại." });
 
     const user = results[0];
 
-    if (password !== user.Password)
-      return res.status(401).json({ message: "Mật khẩu không đúng." });
+    try {
+      const isMatch = await bcrypt.compare(password, user.Password);
 
-    res.status(200).json({
-      message: "Đăng nhập thành công.",
-      id: user.EmployeeID,
-      role: user.RoleID,
-      username: user.Username,
-    });
+      if (!isMatch) {
+        return res.status(401).json({ message: "Mật khẩu không đúng." });
+      }
+
+      res.status(200).json({
+        message: "Đăng nhập thành công.",
+        id: user.EmployeeID,
+        role: user.RoleID,
+        username: user.Username,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Lỗi khi xác thực mật khẩu.", error });
+    }
   });
 };
+
+exports.forgotPassword = async (req, res) => {
+  const { email, phone, newPassword } = req.body;
+
+  try {
+    const pool = await connectSQL();
+
+    const result = await pool.request()
+      .input("email", sql.VarChar, email)
+      .input("phone", sql.VarChar, phone)
+      .query("SELECT EmployeeID FROM Employees WHERE Email = @email AND PhoneNumber = @phone");
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ message: "Email hoặc số điện thoại không tồn tại trong hệ thống nhân sự." });
+    }
+
+    const userId = result.recordset[0].EmployeeID;
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    mysqlConnection.query(
+      "UPDATE account SET password = ? WHERE EmployeeID = ?",
+      [hashedPassword, userId],
+      (err, mysqlResult) => {
+        if (err) {
+          console.error("Lỗi cập nhật mật khẩu MySQL:", err);
+          return res.status(500).json({ message: "Lỗi cập nhật mật khẩu" });
+        }
+
+        if (mysqlResult.affectedRows === 0) {
+          return res.status(404).json({ message: "Không tìm thấy tài khoản trong hệ thống." });
+        }
+
+        res.json({ message: "Đặt lại mật khẩu thành công." });
+      }
+    );
+
+  } catch (error) {
+    console.error("🔥 Lỗi xử lý quên mật khẩu:", error);
+    res.status(500).json({ message: "Đã xảy ra lỗi máy chủ." });
+  }
+};
+
 
 exports.getRole = (req, res) => {
   const query = `SELECT * FROM role`;

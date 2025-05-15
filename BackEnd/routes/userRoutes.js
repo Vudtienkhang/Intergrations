@@ -8,6 +8,8 @@ const userController = require("../controllers/userController.js");
 router.post("/login", userController.login); // Đăng nhập
 router.get("/getAccount", userController.getaccount); // Lấy danh sách tài khoản
 router.post("/addAccount", userController.addAccount); // Thêm tài khoản
+router.post("/forgotPassword", userController.forgotPassword); // quên mật khẩu
+
 
 // ==================== EMPLOYEE ====================
 router.get("/employees", userController.getAllEmployees); // Lấy danh sách nhân viên
