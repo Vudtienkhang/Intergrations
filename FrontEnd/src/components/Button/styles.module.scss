@@ -1,0 +1,19 @@
+@import "@styles/_variable.module.scss";
+@import "@styles/_mixin.module.scss";
+
+.button {
+  background-color: $background_color__button;
+  border: none;
+  color: $text_color;
+  border-radius: 20px;
+  height: 38px;
+  min-width: 75px;  
+  width: auto;
+  @include flex_box(center, center, 5px)
+}
+
+.icon {
+  font-size: 20px;
+  color: $color_icon;
+}
+

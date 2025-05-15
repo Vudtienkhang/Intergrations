@@ -1,0 +1,49 @@
+@import '@styles/_mixin.module.scss';
+.header {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.wrapper {
+  display: flex;
+}
+
+.menuService {
+  height: 100vh;
+  width: 250px;
+  position: absolute;
+  z-index: 2;
+  top: 0;
+}
+
+.content {
+  width: 900px;
+  max-height: 880px;
+  height: 1000px;
+  margin-left: 300px;
+  padding: 10px;
+  flex: 1;
+  background-color: #f9fafc;
+}
+
+.startCard {
+  display: flex;
+  margin-top: 20px;
+  justify-content: space-between;
+}
+
+.barChart {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 50px;
+  margin: 50px 10px 20px 10px;
+  width: 100%;
+}
+
+.employees,
+.department {
+  display: flex;
+  flex-direction: column;
+}

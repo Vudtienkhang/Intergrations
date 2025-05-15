@@ -1,0 +1,89 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 5px; 
+  background-color: #f3f4f6;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.status {
+  font-size: 1.25rem;
+  margin-bottom: 1px;
+}
+
+.buttonGroup {
+  margin: 0;
+  display: flex;
+  gap: 1rem;
+}
+
+.checkInButton {
+  padding: 0.5rem 1.5rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+}
+
+.leaveButton {
+  padding: 0.5rem 1.5rem;
+  background-color: #f97316;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #ea580c;
+  }
+}
+
+.absentButton{
+    background-color: rgba(191, 36, 36, 0.833);
+}
+
+.report {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+.tableTimeKeeping,
+.timekeepingChart {
+  flex: 1; 
+  border-radius: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.tableTimeKeeping{
+  width: 200px;
+}
+
+.tableTimeKeeping {
+  margin-right: 1rem;
+}
+
+.timekeepingChart {
+  margin-left: 1rem;
+}
+
+.salaryChart {
+  width: 100%;
+  margin-top: 20px;
+}

@@ -1,0 +1,105 @@
+@import '@styles/_mixin.module.scss';
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  padding: 16px 20px;
+  vertical-align: middle;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.table_dark th {
+  background-color: #f3f4f6;
+  color: #333;
+  height: 60px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 15px;
+  vertical-align: middle;
+}
+
+th {
+  color: #474440 !important;
+}
+
+.header {
+  @include flex_box(space-between, center, 20px);
+  flex-direction: row;
+  margin-bottom: 1rem;
+}
+
+.tbImg {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.groupEmployee {
+  @include flex_box(flex-start, center);
+  gap: 20px;
+}
+
+.nameBold {
+  font-weight: bold;
+}
+
+.modal_backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  background-color: rgba(0, 0, 0, 0.4);
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn_add {
+  background-color: rgb(79, 70, 229);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+}
+
+.btn {
+  background-color: #f3f4f6;
+  color: rgb(79, 70, 229);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+}
+
+.statusWorking{
+  color: #36da43;
+}
+
+.statusQuit{
+  color: #e9412a;
+}
+
+.statusLeave{
+
+  color: #f7eb00;
+}
+.infor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}

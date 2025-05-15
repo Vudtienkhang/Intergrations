@@ -1,0 +1,92 @@
+.container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  margin-right: 10px;
+  width: 850px; 
+  height: 300px;
+  overflow-y: auto;
+}
+
+.header {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 8px;
+}
+
+.loading,
+.noData {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 10px;
+  color: #777;
+  margin-top: 0;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.iconWrapper {
+  margin-top: 4px;
+}
+
+.iconYellow {
+  background-color: #dbeafe;
+  border-radius: 10px;
+  color: #facc15;
+  height: 50px;
+  width: 50px;
+}
+
+.iconRed {
+  background-color: rgb(219, 234, 254);
+  border-radius: 10px;
+  color: #3b82f6;
+  width: 50px;
+  height: 50px;
+}
+
+.iconPink {
+  color: #ec4899;
+  width: 24px;
+  height: 24px;
+}
+
+.type {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1f2937;
+}
+
+.message {
+  font-size: 14px;
+  color: #374151;
+}
+
+.date {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+.iconErr{
+  border-radius: 10px;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(197, 37, 37, 0.84);
+  color: #e5e7eb;
+}

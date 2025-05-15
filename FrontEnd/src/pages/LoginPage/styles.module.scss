@@ -1,0 +1,79 @@
+.loginContainer {
+  display: flex;
+  height: 100vh;
+}
+
+.loginForm {
+  flex: 3;
+  padding: 40px;
+  background-color: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.title {
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.forgotPassword {
+  display: block;
+  text-align: right;
+  font-size: 14px;
+  color: #007bff;
+  text-decoration: none;
+  margin-bottom: 20px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.loginInfo {
+  flex: 6;
+  background-color: #5046E5;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.description {
+  font-size: 20px;
+}
+
+.btnLogin{
+    width: 100%;
+}
+
+span{
+    font-size: 18px;
+}

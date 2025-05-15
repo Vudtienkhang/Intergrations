@@ -1,0 +1,44 @@
+.position_card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 410px;
+    background-color: #FFFFFF;
+}
+
+.position_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.position_header__one{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+
+}
+
+.position_icon {
+    height: 50px;
+    width: 50px;
+    align-items: center;
+    background-color: #e0e7ff;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.edit_icon {
+    margin-left: auto;
+}
+
+.staff_count {
+    margin: 5px 0;
+}
+
+
+.view_details {
+    color: #007bff;
+    text-decoration: none;
+}

@@ -1,0 +1,10 @@
+.listDepartment {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.listDepartment > div {
+    width: calc(50% - 8px); 
+    box-sizing: border-box;
+}

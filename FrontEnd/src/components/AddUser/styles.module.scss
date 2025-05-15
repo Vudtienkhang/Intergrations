@@ -1,0 +1,125 @@
+.add_user_container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.add_user_left {
+  position: relative;
+  background: #fff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 800px;
+}
+
+.add_user_title {
+  font-size: 30px;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.add_user_form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.input_infor {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.form_group {
+  display: flex;
+  flex-direction: column;
+}
+
+.add_user_label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.add_user_input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: border-color 0.3s;
+
+  &:focus {
+    border-color: #4a90e2;
+    outline: none;
+  }
+}
+
+select.add_user_input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg fill='%23444' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+button {
+  background-color: #4a90e2;
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 20px;
+
+  &:hover {
+    background-color: #357ABD;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+}
+
+.iconClose {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.3s;
+
+  &:hover {
+    color: #000;
+  }
+}
+
+img {
+  margin-top: 10px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.btn_submit{
+  margin-top: 30px;
+  width: 300px;
+}
+
+.btn{
+  margin: 0;
+}
