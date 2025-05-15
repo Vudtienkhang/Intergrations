@@ -32,7 +32,9 @@ exports.login = (req, res) => {
         username: user.Username,
       });
     } catch (error) {
-      return res.status(500).json({ message: "Lỗi khi xác thực mật khẩu.", error });
+      return res
+        .status(500)
+        .json({ message: "Lỗi khi xác thực mật khẩu.", error });
     }
   });
 };
@@ -43,13 +45,21 @@ exports.forgotPassword = async (req, res) => {
   try {
     const pool = await connectSQL();
 
-    const result = await pool.request()
+    const result = await pool
+      .request()
       .input("email", sql.VarChar, email)
       .input("phone", sql.VarChar, phone)
-      .query("SELECT EmployeeID FROM Employees WHERE Email = @email AND PhoneNumber = @phone");
+      .query(
+        "SELECT EmployeeID FROM Employees WHERE Email = @email AND PhoneNumber = @phone"
+      );
 
     if (result.recordset.length === 0) {
-      return res.status(404).json({ message: "Email hoặc số điện thoại không tồn tại trong hệ thống nhân sự." });
+      return res
+        .status(404)
+        .json({
+          message:
+            "Email hoặc số điện thoại không tồn tại trong hệ thống nhân sự.",
+        });
     }
 
     const userId = result.recordset[0].EmployeeID;
@@ -66,19 +76,19 @@ exports.forgotPassword = async (req, res) => {
         }
 
         if (mysqlResult.affectedRows === 0) {
-          return res.status(404).json({ message: "Không tìm thấy tài khoản trong hệ thống." });
+          return res
+            .status(404)
+            .json({ message: "Không tìm thấy tài khoản trong hệ thống." });
         }
 
         res.json({ message: "Đặt lại mật khẩu thành công." });
       }
     );
-
   } catch (error) {
     console.error("🔥 Lỗi xử lý quên mật khẩu:", error);
     res.status(500).json({ message: "Đã xảy ra lỗi máy chủ." });
   }
 };
-
 
 exports.getRole = (req, res) => {
   const query = `SELECT * FROM role`;
@@ -135,7 +145,6 @@ exports.getAllDepartments = (req, res) => {
     res.status(200).json(results);
   });
 };
-
 
 exports.getAllPositions = (req, res) => {
   const query = `SELECT * FROM positions`;
@@ -995,34 +1004,43 @@ exports.getaccount = async (req, res) => {
   }
 };
 
-exports.addAccount = (req, res) => {
+exports.addAccount = async (req, res) => {
   const { EmployeeID, RoleID, UserName, Password } = req.body;
   if (!EmployeeID || !RoleID || !UserName || !Password) {
     return res.status(400).json({ message: "Thiếu thông tin!" });
   }
   const checkQuery = `SELECT * FROM account WHERE EmployeeID = ?`;
-  mysqlConnection.query(checkQuery, [EmployeeID], (err, result) => {
+  mysqlConnection.query(checkQuery, [EmployeeID], async (err, result) => {
     if (err) {
-      console.err("Lỗi kiểm tra tài khoản: ", err);
+      console.error("Lỗi kiểm tra tài khoản: ", err);
       return res.status(500).json({ message: "Lỗi server!" });
     }
 
     if (result.length > 0) {
-      return res.status(409).json({ message: "Taì khoản đã tồn tại" });
+      return res.status(409).json({ message: "Tài khoản đã tồn tại" });
     }
 
-    const insertQuery = `INSERT INTO account (EmployeeID, RoleID, UserName, Password) VALUES (?,?,?,?)`;
-    mysqlConnection.query(
-      insertQuery,
-      [EmployeeID, RoleID, UserName, Password],
-      (err, result) => {
-        if (err) {
-          console.err("Lỗi thêm tài khoản: ", err);
-          return res.status(500).json({ message: "Không thể thêm tài khoản" });
+    try {
+      const hashedPassword = await bcrypt.hash(Password, 10);
+
+      const insertQuery = `INSERT INTO account (EmployeeID, RoleID, UserName, Password) VALUES (?,?,?,?)`;
+      mysqlConnection.query(
+        insertQuery,
+        [EmployeeID, RoleID, UserName, hashedPassword],
+        (err, result) => {
+          if (err) {
+            console.error("Lỗi thêm tài khoản: ", err);
+            return res
+              .status(500)
+              .json({ message: "Không thể thêm tài khoản" });
+          }
+          return res.status(200).json({ message: "Tạo tài khoản thành công" });
         }
-        return res.status(200).json({ message: "Tạo tài khoản thành công" });
-      }
-    );
+      );
+    } catch (error) {
+      console.error("Lỗi khi băm mật khẩu: ", error);
+      return res.status(500).json({ message: "Lỗi server khi xử lý mật khẩu" });
+    }
   });
 };
 

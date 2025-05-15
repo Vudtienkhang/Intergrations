@@ -3,10 +3,10 @@ import axios from 'axios';
 import moment from 'moment';
 import styles from './styles.module.scss';
 import UpdateEmployees from '../UpdateEmployees/UpdateEmployees';
-import {ToastContext} from '../../Contexts/ToastProvider';
 import AddUser from '../AddUser/Adduser';
 import {IoIosAdd} from 'react-icons/io';
 import {MdOutlineSystemUpdateAlt, MdDeleteOutline} from 'react-icons/md';
+import { ToastContext } from '../../Contexts/ToastProvider';
 
 function Table_Employees() {
   const [employees, setEmployees] = useState([]);
@@ -18,7 +18,7 @@ function Table_Employees() {
 
   const {infor, header, table, table_dark, tbImg, groupEmployee, nameBold, modal_backdrop, btn_add, btn, statusWorking, statusQuit, statusLeave} = styles;
 
-  const toast = useContext(ToastContext);
+  const {toast} = useContext(ToastContext)
   const getStatusClass = (status) => {
     switch (status) {
       case 'Đang làm':
