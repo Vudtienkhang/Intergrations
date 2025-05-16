@@ -6,7 +6,9 @@ import UpdateEmployees from '../UpdateEmployees/UpdateEmployees';
 import AddUser from '../AddUser/Adduser';
 import {IoIosAdd} from 'react-icons/io';
 import {MdOutlineSystemUpdateAlt, MdDeleteOutline} from 'react-icons/md';
-import { ToastContext } from '../../Contexts/ToastProvider';
+import {ToastContext} from '../../Contexts/ToastProvider';
+import {exportEmployeesToExcel} from '../../utils/exportExcel';
+import {importEmployeesFromExcel} from '../../utils/importExcel';
 
 function Table_Employees() {
   const [employees, setEmployees] = useState([]);
@@ -16,9 +18,9 @@ function Table_Employees() {
   const [selectedPosition, setSelectedPosition] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
 
-  const {infor, header, table, table_dark, tbImg, groupEmployee, nameBold, modal_backdrop, btn_add, btn, statusWorking, statusQuit, statusLeave} = styles;
+  const {functions, infor, header, table, table_dark, tbImg, groupEmployee, nameBold, modal_backdrop, btn_add, btn, statusWorking, statusQuit, statusLeave} = styles;
 
-  const {toast} = useContext(ToastContext)
+  const {toast} = useContext(ToastContext);
   const getStatusClass = (status) => {
     switch (status) {
       case 'Đang làm':
@@ -68,50 +70,70 @@ function Table_Employees() {
   const uniquePositions = [...new Set(employees.map((emp) => emp.PositionName))];
   const uniqueDepartments = [...new Set(employees.map((emp) => emp.DepartmentName))];
 
-  return (
-    <div className="container-fluid mt-3">
-      <div className={header}>
-        <h1>Employees</h1>
-        <button className={btn_add} onClick={() => setShowAddUser(true)}>
-          <IoIosAdd /> Thêm
-        </button>
-      </div>
+  const handleImportExcel = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-      <div className="row align-items-end mb-3 mt-4">
-        <div className="col-md-3">
-          <input type="text" className="form-control" placeholder="Tìm kiếm theo tên" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-        </div>
-        <div className="col-md-3">
-          <select className="form-control" value={selectedPosition} onChange={(e) => setSelectedPosition(e.target.value)}>
-            <option value="">-- Lọc theo vị trí --</option>
-            {uniquePositions.map((pos) => (
-              <option key={pos} value={pos}>
-                {pos}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="col-md-3">
-          <select className="form-control" value={selectedDepartment} onChange={(e) => setSelectedDepartment(e.target.value)}>
-            <option value="">-- Lọc theo phòng ban --</option>
-            {uniqueDepartments.map((dep) => (
-              <option key={dep} value={dep}>
-                {dep}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="col-md-3">
-          <button
-            className="btn btn-secondary w-100"
-            onClick={() => {
-              setSearchTerm('');
-              setSelectedPosition('');
-              setSelectedDepartment('');
-            }}
-          >
-            Đặt lại bộ lọc
+    try {
+      const employees = await importEmployeesFromExcel(file);
+
+      const res = await axios.post('http://localhost:3000/api/import', employees);
+
+      if (res.status == 200) {
+        toast.success('Import thành công!');
+        fetchEmployees();
+      }
+    } catch (err) {
+      console.error('Lỗi import:', err);
+      toast.error('Import thất bại!');
+    }
+  };
+  return (
+    <div className="container-fluid mt-3" style={{maxHeight: '850px', overflowY: 'auto'}}>
+      <div className={functions}>
+        <div className={header}>
+          <h1>Employees</h1>
+          <button className={btn_add} onClick={() => setShowAddUser(true)}>
+            <IoIosAdd /> Thêm
           </button>
+        </div>
+
+        <div className="row align-items-end mb-3 mt-4">
+          <div className="col-md-3">
+            <input type="text" className="form-control" placeholder="Tìm kiếm theo tên" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          </div>
+          <div className="col-md-3">
+            <select className="form-control" value={selectedPosition} onChange={(e) => setSelectedPosition(e.target.value)}>
+              <option value="">-- Lọc theo vị trí --</option>
+              {uniquePositions.map((pos) => (
+                <option key={pos} value={pos}>
+                  {pos}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-md-3">
+            <select className="form-control" value={selectedDepartment} onChange={(e) => setSelectedDepartment(e.target.value)}>
+              <option value="">-- Lọc theo phòng ban --</option>
+              {uniqueDepartments.map((dep) => (
+                <option key={dep} value={dep}>
+                  {dep}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-md-3">
+            <button
+              className="btn btn-secondary w-100"
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedPosition('');
+                setSelectedDepartment('');
+              }}
+            >
+              Đặt lại bộ lọc
+            </button>
+          </div>
         </div>
       </div>
 
@@ -133,7 +155,7 @@ function Table_Employees() {
             <tr key={emp.EmployeeID}>
               <td className={groupEmployee}>
                 <img src={emp.Img_url} alt="" className={tbImg} />
-                
+
                 <div className={infor}>
                   <span className={nameBold}>{emp.FullName}</span>
                   <div>{emp.Email}</div>
@@ -158,6 +180,9 @@ function Table_Employees() {
           ))}
         </tbody>
       </table>
+      <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} />
+
+      <button onClick={() => exportEmployeesToExcel(employees)}>xuất excel</button>
 
       {selectedEmployeeID && (
         <div className={modal_backdrop}>

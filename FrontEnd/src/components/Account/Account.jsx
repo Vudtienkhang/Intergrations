@@ -1,13 +1,15 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import styles from './styles.module.scss';
 import axios from 'axios';
 import {IoIosAdd} from 'react-icons/io';
 import {IoMdClose} from 'react-icons/io';
 import {MdBrowserUpdated} from 'react-icons/md';
+import { ToastContext } from '../../Contexts/ToastProvider';
 
 function Account() {
   const [accountData, setAccountData] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const {toast} = useContext(ToastContext)
   const [employees, setEmployees] = useState([]);
   const [role, setRole] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -76,17 +78,17 @@ function Account() {
 
   const handleAddAccount = async () => {
     if (!formData.EmployeeID || !formData.RoleID || !formData.UserName || !formData.Password || !formData.ConfirmPassword) {
-      alert('Chưa đẩy đủ thông tin');
+      toast.error("Chưa đầy đủ thông tin")
       return;
     }
     if (formData.Password !== formData.ConfirmPassword) {
-      alert('Hai mật khẩu không khùng nhau');
+      toast.error('Hai mật khẩu không khùng nhau');
     }
 
     try {
       const res = await axios.post('http://localhost:3000/api/addAccount', formData);
-      if (res.data.success) {
-        alert('Thêm tài khoản thành công!!');
+      if (res.status==200) {
+        toast.success('Thêm tài khoản thành công!!');
         setShowForm(false);
         setFormData({
           EmployeeID: '',
@@ -98,7 +100,7 @@ function Account() {
         const fetch = await axios.get('http://localhost:3000/api/getAccount');
         setAccountData(fetch.data);
       } else {
-        alert('Lỗi thêm tài khoản!');
+        toast.error('Lỗi thêm tài khoản!');
       }
     } catch (error) {
       console.error('Lỗi khi thêm nhân viên!', error);

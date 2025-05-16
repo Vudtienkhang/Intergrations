@@ -1,19 +1,35 @@
-import styles from './styles.module.scss';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import {useState} from 'react';
 import TableTimeKeepingByID from '../TableTimeKeepingByID/TableTimeKeepingByID';
 import TimekeepingChart from '../TimeKeepingChart/TimeKeepingChart';
 import SalaryChart from '../SalaryChart/SalaryChart';
+import styles from './styles.module.scss';
 
 function Timekeeping() {
   const [status, setStatus] = useState('Chưa chấm công');
   const [buttonsVisible, setButtonsVisible] = useState(true);
+  const [timekeepingData, setTimekeepingData] = useState([]);
   const employeeId = JSON.parse(localStorage.getItem('user'))?.id;
 
   const getCurrentDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   };
+
+  const fetchTimekeepingData = async () => {
+    try {
+      const res = await axios.get(`http://localhost:3000/api/getTimekeepingByEmployee/${employeeId}`);
+      setTimekeepingData(res.data);
+    } catch (error) {
+      console.error('Lỗi lấy dữ liệu chấm công:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (employeeId) {
+      fetchTimekeepingData();
+    }
+  }, [employeeId]);
 
   const handleTimekeeping = async (type) => {
     if (!employeeId) {
@@ -30,6 +46,9 @@ function Timekeeping() {
       });
       setStatus(res.data.message);
       setButtonsVisible(false);
+
+      await fetchTimekeepingData();
+
     } catch (err) {
       if (err.response && err.response.data?.message === 'Đã chấm công hôm nay!') {
         setStatus('Bạn đã chấm công hôm nay rồi!');
@@ -60,14 +79,16 @@ function Timekeeping() {
       )}
       <div className={styles.report}>
         <div className={styles.tableTimeKeeping}>
-          <TableTimeKeepingByID />
+
+          <TableTimeKeepingByID data={timekeepingData} />
         </div>
         <div className={styles.timekeepingChart}>
-          <TimekeepingChart/>
+
+          <TimekeepingChart data={timekeepingData} />
         </div>
       </div>
       <div className={styles.salaryChart}>
-        <SalaryChart />
+        <SalaryChart data={timekeepingData} />
       </div>
     </div>
   );

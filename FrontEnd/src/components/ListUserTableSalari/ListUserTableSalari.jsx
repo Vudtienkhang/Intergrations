@@ -1,18 +1,21 @@
 import React, {useState, useEffect, useContext} from 'react';
 import styles from './styles.module.scss';
 import Button from '../Button/Button';
-import { ToastContext } from '../../Contexts/ToastProvider';
+import {ToastContext} from '../../Contexts/ToastProvider';
 
 function ListUserTableSalari() {
-  const {container, message, table, tableHead, controls, searchInput,btn, btn_delete, salaryForm} = styles;
+  const {container, message, table, tableHead, controls, searchInput, btn, btn_delete, salaryForm} = styles;
 
   const [data, setData] = useState([]);
-  const {toast} = useContext(ToastContext)
+  const {toast} = useContext(ToastContext);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [filterMonth, setFilterMonth] = useState('');
+  const [filterYear, setFilterYear] = useState('');
+
   const [formData, setFormData] = useState({
     EmployeeID: '',
     BaseSalary: '',
@@ -26,6 +29,12 @@ function ListUserTableSalari() {
     Deductions: '',
   });
 
+  const fetchData = async () => {
+    const res = await fetch('/api/getsalaries');
+    const data = await res.json();
+    setData(data);
+  };
+
   useEffect(() => {
     fetch('/api/getsalaries')
       .then((response) => {
@@ -37,6 +46,7 @@ function ListUserTableSalari() {
       .then((data) => {
         const processedData = data.map((item) => ({
           ...item,
+          SalaryID: item.SalaryID,
           LuongCoBan: parseFloat(item.BaseSalary || 0),
           Thuong: parseFloat(item.Bonus || 0),
           KhauTru: parseFloat(item.Deductions || 0),
@@ -84,7 +94,6 @@ function ListUserTableSalari() {
       NetSalary: netSalary,
       SalaryMonth: salaryMonth,
     };
-
     fetch('/api/addsalary', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -95,20 +104,10 @@ function ListUserTableSalari() {
         return res.json();
       })
       .then(() => {
-        toast.success("Thêm lương thành công")
+        toast.success('Thêm lương thành công');
         setShowForm(false);
         setFormData({EmployeeID: '', BaseSalary: '', Bonus: '', Deductions: ''});
-        setData((prevData) => [
-          ...prevData,
-          {
-            EmployeeID: Number(EmployeeID),
-            BaseSalary: Number(BaseSalary),
-            Bonus: Number(Bonus),
-            Deductions: Number(Deductions),
-            NetSalary: Number(BaseSalary) + Number(Bonus) - Number(Deductions),
-            SalaryMonth: new Date().toISOString().split('T')[0],
-          },
-        ]);
+        fetchData();
       })
 
       .catch((err) => {
@@ -126,11 +125,11 @@ function ListUserTableSalari() {
           return res.json();
         })
         .then(() => {
-          alert('Xóa lương thành công');
+          toast.success('Xoá lương thành công!');
           setData(data.filter((item) => item.SalaryID !== salaryID));
         })
         .catch((err) => {
-          alert('Lỗi: ' + err.message);
+          toast.error('Lỗi:', err.message);
         });
     }
   };
@@ -156,7 +155,7 @@ function ListUserTableSalari() {
         return res.json();
       })
       .then(() => {
-        alert('Cập nhật thành công');
+        toast.success('Cập nhật lương thành công!');
         setEditingSalaryID(null);
         setData((prevData) =>
           prevData.map((item) =>
@@ -173,71 +172,114 @@ function ListUserTableSalari() {
         );
       })
       .catch((err) => {
-        alert('Lỗi: ' + err.message);
+        toast.error('Lỗi:', err.message);
       });
   };
 
   if (loading) return <p className={message}>Đang tải dữ liệu...</p>;
   if (error) return <p className={message}>Lỗi: {error}</p>;
 
-  const filteredData = data.filter((item) => item.FullName.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredData = data.filter((item) => {
+    const fullNameMatch = item.FullName?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const month = item.SalaryMonth.getMonth() + 1;
+    const year = item.SalaryMonth.getFullYear();
+    const monthMatch = !filterMonth || String(month).padStart(2, '0') === filterMonth;
+    const yearMatch = !filterYear || String(year) === filterYear;
+
+    return fullNameMatch && monthMatch && yearMatch;
+  });
 
   return (
     <div className={container}>
       <div className={controls}>
         <input type="text" placeholder="Tìm theo tên..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className={searchInput} />
-        <Button name="Thêm" onClick={() => setShowForm(true)} className={btn}/>
+        <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}>
+          <option value="">Tất cả tháng</option>
+          {[...Array(12)].map((_, i) => {
+            const m = String(i + 1).padStart(2, '0');
+            return (
+              <option key={m} value={m}>
+                Tháng {m}
+              </option>
+            );
+          })}
+        </select>
+
+        <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
+          <option value="">Tất cả năm</option>
+          {[2023, 2024, 2025].map((y) => (
+            <option key={y} value={String(y)}>
+              {y}
+            </option>
+          ))}
+        </select>
+
+        <Button name="Thêm" onClick={() => setShowForm(true)} className={btn} />
       </div>
 
-      <table className={table}>
-        <thead className={tableHead}>
-          <tr>
-            <th>Mã nhân viên</th>
-            <th>Họ tên</th>
-            <th>Lương cơ bản</th>
-            <th>Phụ cấp</th>
-            <th>Thưởng</th>
-            <th>Khấu trừ</th>
-            <th>Lương thực nhận</th>
-            <th></th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.length === 0 ? (
+      <div className={styles.tableWrapper}>
+        <table className={table}>
+          <thead className={tableHead}>
             <tr>
-              <td colSpan="9">Không có dữ liệu</td>
+              <th>Mã nhân viên</th>
+              <th>Họ tên</th>
+              <th>Tháng</th>
+              <th>Lương cơ bản</th>
+              <th>Thưởng</th>
+              <th>Khấu trừ</th>
+              <th>Lương thực nhận</th>
+              <th></th>
+              <th></th>
             </tr>
-          ) : (
-            filteredData.map((item) => (
-              <tr key={item.SalaryID}>
-                <td>{item.EmployeeID}</td>
-                <td>{item.FullName}</td>
-                <td>{item.LuongCoBan.toLocaleString()}</td>
-                <td>{item.Thuong.toLocaleString()}</td>
-                <td>{item.KhauTru.toLocaleString()}</td>
-                <td>{item.LuongThucNhan.toLocaleString()}</td>
-                <td>
-                  <Button
-                    name={'Cập Nhật'}
-                    onClick={() => {
-                      setEditingSalaryID(item.SalaryID);
-                      setEditFormData({
-                        BaseSalary: item.LuongCoBan,
-                        Bonus: item.Thuong,
-                        Deductions: item.KhauTru,
-                      });
-                    }}
-                  />
-                </td>
-                <td>
-                  <Button name={'Xóa'} className={btn_delete} onClick={() => handleDeleteSalary(item.SalaryID)} />
-                </td>
+          </thead>
+          <tbody>
+            {filteredData.length === 0 ? (
+              <tr>
+                <td colSpan="9">Không có dữ liệu</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              filteredData.map((item) => (
+                <tr key={item.SalaryID}>
+                  <td>{item.EmployeeID}</td>
+                  <td>{item.FullName}</td>
+                  <td>
+                    {(() => {
+                      const date = new Date(item.SalaryMonth);
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const year = date.getFullYear();
+                      return `${month}/${year}`;
+                    })()}
+                  </td>
+                  <td>{item.LuongCoBan?.toLocaleString?.() || '0'}</td>
+                  <td>{item.Thuong?.toLocaleString?.() || '0'}</td>
+                  <td>{item.KhauTru?.toLocaleString?.() || '0'}</td>
+                  <td>{item.LuongThucNhan?.toLocaleString?.() || '0'}</td>
+                  <td>
+                    <Button
+                      name={'Cập Nhật'}
+                      onClick={() => {
+                        if (item.SalaryID === undefined) {
+                          console.error('SalaryID is undefined!', item);
+                        }
+                        setEditingSalaryID(item.SalaryID);
+                        setEditFormData({
+                          BaseSalary: item.LuongCoBan,
+                          Bonus: item.Thuong,
+                          Deductions: item.KhauTru,
+                        });
+                      }}
+                    />
+                  </td>
+                  <td>
+                    <Button name={'Xóa'} className={btn_delete} onClick={() => handleDeleteSalary(item.SalaryID)} />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {editingSalaryID && (
         <div className={salaryForm}>

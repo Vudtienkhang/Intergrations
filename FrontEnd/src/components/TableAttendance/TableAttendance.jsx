@@ -37,28 +37,30 @@ function TableAttendance() {
         </select>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Tên nhân viên</th>
-            <th>Tháng</th>
-            <th>Ngày làm</th>
-            <th>Ngày nghỉ phép</th>
-            <th>Ngày vắng</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((row, index) => (
-            <tr key={index}>
-              <td>{row.FullName}</td>
-              <td>{row.Month}</td>
-              <td>{row.TotalWorkDays}</td>
-              <td>{row.TotalLeaveDays}</td>
-              <td>{row.TotalAbsentDays}</td>
+      <div className={styles.tableWrapper}>
+        <table>
+          <thead>
+            <tr>
+              <th>Tên nhân viên</th>
+              <th>Tháng</th>
+              <th>Ngày làm</th>
+              <th>Ngày nghỉ phép</th>
+              <th>Ngày vắng</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredData.map((row, index) => (
+              <tr key={index}>
+                <td>{row.FullName}</td>
+                <td>{row.Month}</td>
+                <td>{row.TotalWorkDays}</td>
+                <td>{row.TotalLeaveDays}</td>
+                <td>{row.TotalAbsentDays}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

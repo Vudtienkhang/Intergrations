@@ -36,6 +36,13 @@ th {
   margin-bottom: 1rem;
 }
 
+.functions {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 1000;
+}
+
 .tbImg {
   width: 45px;
   height: 45px;
@@ -86,16 +93,15 @@ th {
   }
 }
 
-.statusWorking{
+.statusWorking {
   color: #36da43;
 }
 
-.statusQuit{
+.statusQuit {
   color: #e9412a;
 }
 
-.statusLeave{
-
+.statusLeave {
   color: #f7eb00;
 }
 .infor {

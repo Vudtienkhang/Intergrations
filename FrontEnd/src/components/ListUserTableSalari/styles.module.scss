@@ -22,6 +22,7 @@
   background-color: #ffffff;
   border-radius: 10px;
   overflow: hidden;
+  margin-top: 0;
 }
 
 .table th,
@@ -131,3 +132,12 @@
   margin-right: 10px;
   margin-top: 10px;
 }
+
+.tableWrapper {
+  max-height: 300px; 
+  min-height: 300px; 
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  margin-top: 0;
+}
+
