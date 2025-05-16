@@ -54,12 +54,10 @@ exports.forgotPassword = async (req, res) => {
       );
 
     if (result.recordset.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message:
-            "Email hoặc số điện thoại không tồn tại trong hệ thống nhân sự.",
-        });
+      return res.status(404).json({
+        message:
+          "Email hoặc số điện thoại không tồn tại trong hệ thống nhân sự.",
+      });
     }
 
     const userId = result.recordset[0].EmployeeID;
@@ -243,11 +241,11 @@ exports.addSalary = (req, res) => {
     req.body;
 
   if (
-    !EmployeeID ||
-    !BaseSalary ||
-    !Bonus ||
-    !Deductions ||
-    !NetSalary ||
+    EmployeeID === undefined ||
+    BaseSalary === undefined ||
+    Bonus === undefined ||
+    Deductions === undefined ||
+    NetSalary === undefined ||
     !SalaryMonth
   ) {
     return res
@@ -583,7 +581,7 @@ exports.gettotalSalary = (req, res) => {
 // Lấy thông tin lương từ MySQL
 exports.getsalaries = (req, res) => {
   const query = `
-    SELECT s.*, e.FullName
+    SELECT s.SalaryID, s.SalaryMonth,s.SalaryMonth, s.BaseSalary, s.Bonus, s.Deductions, s.NetSalary, e.FullName, e.EmployeeID
     FROM salaries s
     JOIN employees e ON s.EmployeeID = e.EmployeeID
   `;
@@ -1182,4 +1180,80 @@ exports.getAllAttendance = (req, res) => {
     }
     return res.status(200).json(result);
   });
+};
+
+exports.importExcel = async (req, res) => {
+  const employees = req.body;
+
+  try {
+    const pool = await connectSQL();
+
+    for (const emp of employees) {
+      let imgUrl = emp.Img_url || null;
+
+      const deptResult = await pool
+        .request()
+        .input("DepartmentName", sql.NVarChar, emp.DepartmentName)
+        .query(
+          `SELECT DepartmentID FROM Departments WHERE DepartmentName = @DepartmentName`
+        );
+
+      const departmentID = deptResult.recordset[0]?.DepartmentID;
+
+      const posResult = await pool
+        .request()
+        .input("PositionName", sql.NVarChar, emp.PositionName)
+        .query(
+          `SELECT PositionID FROM Positions WHERE PositionName = @PositionName`
+        );
+
+      const positionID = posResult.recordset[0]?.PositionID;
+
+      if (!departmentID || !positionID) {
+        console.warn(`Không tìm thấy ID cho nhân viên: ${emp.FullName}`);
+        continue;
+      }
+
+      const result = await pool
+        .request()
+        .input("FullName", sql.NVarChar, emp.FullName)
+        .input("Gender", sql.NVarChar, emp.Gender)
+        .input("DateOfBirth", sql.Date, new Date(emp.DateOfBirth))
+        .input("PhoneNumber", sql.VarChar, emp.PhoneNumber)
+        .input("Email", sql.VarChar, emp.Email)
+        .input("HireDate", sql.Date, new Date(emp.HireDate))
+        .input("Img_url", sql.VarChar, imgUrl)
+        .input("DepartmentID", sql.Int, departmentID)
+        .input("PositionID", sql.Int, positionID)
+        .input("Status", sql.NVarChar, emp.Status).query(`
+          INSERT INTO Employees (
+            FullName, Gender, DateOfBirth, PhoneNumber, Email,
+            HireDate, Img_url, DepartmentID, PositionID, Status
+          )
+          OUTPUT INSERTED.EmployeeID
+          VALUES (
+            @FullName, @Gender, @DateOfBirth, @PhoneNumber, @Email,
+            @HireDate, @Img_url, @DepartmentID, @PositionID, @Status
+          )
+        `);
+
+      const employeeID = result.recordset[0].EmployeeID;
+
+      await mysqlConnection.execute(
+        `
+        INSERT INTO Employees (EmployeeID, FullName, DepartmentID, PositionID)
+        VALUES (?, ?, ?, ?)
+      `,
+        [employeeID, emp.FullName, departmentID, positionID]
+      );
+    }
+
+    res.status(200).json({ message: "Import thành công!" });
+  } catch (err) {
+    console.error("Lỗi khi import:", err);
+    res.status(500).json({
+      message: "Lỗi khi import nhân viên: " + (err.message || "Không xác định"),
+      error: err,
+    });
+  }
 };
