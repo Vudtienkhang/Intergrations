@@ -1,4 +1,5 @@
 import {useEffect, useState} from 'react';
+import {useLocation} from 'react-router-dom';
 import axios from 'axios';
 import Header from '../../components/Header/Header';
 import MenuService from '../../components/MenuService/MenuService';
@@ -18,15 +19,18 @@ import Notification from '../../components/Notifications/Notification';
 import Timekeeping from '../../components/Timekeeping/Timekeeping';
 import TableAttendance from '../../components/TableAttendance/TableAttendance';
 import PersonalAccount from '../../components/PersonalAccount/PersonalAccount';
+import StatusChart from '../../components/BarChart/StatusChart/StatusChart';
+import GenderChart from '../../components/BarChart/GenderChart/GenderChart';
 
 function DashBoardAdmin() {
-  const {header, menuService, content, startCard, barChart, wrapper, employees, department, topSection} = styles;
+  const {header, menuService, content, startCard, barChart, wrapper, employees, department, topSection, bottomSection, pieChart} = styles;
 
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [totalDepartment, setTotalDepartment] = useState(0);
   const [totalSalary, setTotalSalary] = useState(0);
   const [currentMonth, setCurrentMonth] = useState('');
-  const [activeMenu, setActiveMenu] = useState('Tổng quan & Báo cáo');
+  const location = useLocation();
+
   const roleId = JSON.parse(localStorage.getItem('user'))?.role;
 
   useEffect(() => {
@@ -38,7 +42,7 @@ function DashBoardAdmin() {
         }
       })
       .catch((err) => {
-        console.error('Lỗi lấy số phòng ban:', err);
+        console.error('Lỗi lấy số nhân viên:', err);
       });
   }, []);
   useEffect(() => {
@@ -64,13 +68,21 @@ function DashBoardAdmin() {
         }
       })
       .catch((err) => {
-        console.error('Lỗi lấy số phòng ban:', err);
+        console.error('Lỗi lấy tổng lương:', err);
       });
   }, []);
 
-  const handleMenuClick = (menuLabel) => {
-    setActiveMenu(menuLabel);
-  };
+  const pathname = location.pathname;
+
+  let activeMenu = '';
+  if (pathname.startsWith('/dashboard/overview')) activeMenu = 'Tổng quan & Báo cáo';
+  else if (pathname.startsWith('/dashboard/employees')) activeMenu = 'Nhân viên';
+  else if (pathname.startsWith('/dashboard/salary-attendance')) activeMenu = 'Lương & Chấm công';
+  else if (pathname.startsWith('/dashboard/departments')) activeMenu = 'Phòng ban';
+  else if (pathname.startsWith('/dashboard/positions')) activeMenu = 'Chức danh';
+  else if (pathname.startsWith('/dashboard/accounts')) activeMenu = 'Tài khoản';
+  else if (pathname.startsWith('/dashboard/timekeeping')) activeMenu = 'Chấm công';
+  else if (pathname.startsWith('/dashboard/personal-account')) activeMenu = 'Tài khoản cá nhân';
 
   return (
     <div>
@@ -79,7 +91,7 @@ function DashBoardAdmin() {
       </div>
       <div className={wrapper}>
         <div className={menuService}>
-          <MenuService onMenuClick={handleMenuClick} activeMenu={activeMenu} />
+          <MenuService />
         </div>
         <div className={content}>
           {activeMenu === 'Tổng quan & Báo cáo' && (
@@ -96,7 +108,13 @@ function DashBoardAdmin() {
                   <HorizontalBarChart />
                   <Notification />
                 </div>
-                <MonthlySalaryChart />
+                <div className={bottomSection}>
+                  <MonthlySalaryChart />
+                  <div className={pieChart}>
+                    <StatusChart />
+                    <GenderChart/>
+                  </div>
+                </div>
               </div>
             </>
           )}

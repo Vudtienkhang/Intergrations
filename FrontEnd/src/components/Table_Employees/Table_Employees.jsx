@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState, useRef} from 'react';
 import axios from 'axios';
 import moment from 'moment';
 import styles from './styles.module.scss';
@@ -17,8 +17,8 @@ function Table_Employees() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPosition, setSelectedPosition] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
-
-  const {functions, infor, header, table, table_dark, tbImg, groupEmployee, nameBold, modal_backdrop, btn_add, btn, statusWorking, statusQuit, statusLeave} = styles;
+  const fileInputRef = useRef(null);
+  const {functions, infor, header, table, table_dark, tbImg, groupEmployee, nameBold, modal_backdrop, btn_add, btn, statusWorking, statusQuit, statusLeave, container_table, btn_import, btn_export, container_btn} = styles;
 
   const {toast} = useContext(ToastContext);
   const getStatusClass = (status) => {
@@ -93,9 +93,16 @@ function Table_Employees() {
       <div className={functions}>
         <div className={header}>
           <h1>Employees</h1>
-          <button className={btn_add} onClick={() => setShowAddUser(true)}>
-            <IoIosAdd /> Thêm
-          </button>
+          <div className={container_btn}>
+            <button className={btn_add} onClick={() => setShowAddUser(true)}>
+              <IoIosAdd /> Thêm
+            </button>
+            <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} ref={fileInputRef} style={{display: 'none'}} />
+            <button className={btn_import} onClick={() => fileInputRef.current.click()}>
+              Nhập từ Excel
+            </button>
+            <button className={btn_export} onClick={() => exportEmployeesToExcel(employees)}>xuất excel</button>
+          </div>
         </div>
 
         <div className="row align-items-end mb-3 mt-4">
@@ -136,53 +143,51 @@ function Table_Employees() {
           </div>
         </div>
       </div>
-
-      <table className={table}>
-        <thead className={table_dark}>
-          <tr>
-            <th>Thông tin nhân viên</th>
-            <th>Số điện thoại</th>
-            <th>Ngày vào làm</th>
-            <th>Ngày sinh nhật</th>
-            <th>Vị trí</th>
-            <th>Phòng ban</th>
-            <th>Trạng thái</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredEmployees.map((emp) => (
-            <tr key={emp.EmployeeID}>
-              <td className={groupEmployee}>
-                <img src={emp.Img_url} alt="" className={tbImg} />
-
-                <div className={infor}>
-                  <span className={nameBold}>{emp.FullName}</span>
-                  <div>{emp.Email}</div>
-                  <div>ID: {emp.EmployeeID}</div>
-                </div>
-              </td>
-              <td>{emp.PhoneNumber}</td>
-              <td>{moment(emp.HireDate).format('DD/MM/YYYY')}</td>
-              <td>{moment(emp.DateOfBirth).format('DD/MM/YYYY')}</td>
-              <td>{emp.PositionName}</td>
-              <td>{emp.DepartmentName}</td>
-              <td className={getStatusClass(emp.Status)}>{emp.Status}</td>
-              <td>
-                <button className={btn} onClick={() => setSelectedEmployeeID(emp.EmployeeID)}>
-                  <MdOutlineSystemUpdateAlt size="24px" />
-                </button>
-                <button className={btn} onClick={() => handleDelete(emp.EmployeeID)}>
-                  <MdDeleteOutline size="24px" />
-                </button>
-              </td>
+      <div className={container_table}>
+        <table className={table}>
+          <thead className={table_dark}>
+            <tr>
+              <th>Thông tin nhân viên</th>
+              <th>Số điện thoại</th>
+              <th>Ngày vào làm</th>
+              <th>Ngày sinh nhật</th>
+              <th>Vị trí</th>
+              <th>Phòng ban</th>
+              <th>Trạng thái</th>
+              <th></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} />
+          </thead>
+          <tbody>
+            {filteredEmployees.map((emp) => (
+              <tr key={emp.EmployeeID}>
+                <td className={groupEmployee}>
+                  <img src={emp.Img_url} alt="" className={tbImg} />
 
-      <button onClick={() => exportEmployeesToExcel(employees)}>xuất excel</button>
+                  <div className={infor}>
+                    <span className={nameBold}>{emp.FullName}</span>
+                    <div>{emp.Email}</div>
+                    <div>ID: {emp.EmployeeID}</div>
+                  </div>
+                </td>
+                <td>{emp.PhoneNumber}</td>
+                <td>{moment(emp.HireDate).format('DD/MM/YYYY')}</td>
+                <td>{moment(emp.DateOfBirth).format('DD/MM/YYYY')}</td>
+                <td>{emp.PositionName}</td>
+                <td>{emp.DepartmentName}</td>
+                <td className={getStatusClass(emp.Status)}>{emp.Status}</td>
+                <td>
+                  <button className={btn} onClick={() => setSelectedEmployeeID(emp.EmployeeID)}>
+                    <MdOutlineSystemUpdateAlt size="24px" />
+                  </button>
+                  <button className={btn} onClick={() => handleDelete(emp.EmployeeID)}>
+                    <MdDeleteOutline size="24px" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {selectedEmployeeID && (
         <div className={modal_backdrop}>

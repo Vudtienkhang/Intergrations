@@ -15,6 +15,7 @@
   position: absolute;
   z-index: 2;
   top: 0;
+  
 }
 
 .content {
@@ -46,12 +47,19 @@
   gap: 50px;
 }
 
-.bottomSelection{
-  height: 300px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-
+.bottomSection{
+  display: flex;
+  justify-content: space-between;
 }
 
+.pieChart{
+  border-radius: 10px;
+  width: 690px;
+  display: flex;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  background-color: ffff;
+  
+}
 
 .employees,
 .department {

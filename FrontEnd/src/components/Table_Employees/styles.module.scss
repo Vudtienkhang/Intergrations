@@ -8,6 +8,10 @@
   overflow: hidden;
 }
 
+.container_table{
+  max-height: 500px;
+}
+
 .table th,
 .table td {
   height: 150px;
@@ -32,6 +36,7 @@ th {
 }
 
 .header {
+  padding: 10px;
   @include flex_box(space-between, center, 20px);
   flex-direction: row;
   margin-bottom: 1rem;
@@ -74,12 +79,27 @@ th {
   align-items: center;
 }
 
+.container_btn{
+  display: flex;
+  gap: 20px;
+}
+
 .btn_add {
-  background-color: rgb(79, 70, 229);
+  height: 48px;
+  background-color: #28a745;
   color: #fff;
   padding: 8px 16px;
   border-radius: 6px;
   border: none;
+}
+
+.btn_import{
+  background-color: #fd7e14;
+  margin: 10;
+}
+
+.btn_export{
+  background-color: #007bff;
 }
 
 .btn {
