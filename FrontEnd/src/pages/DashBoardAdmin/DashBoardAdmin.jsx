@@ -20,7 +20,7 @@ import TableAttendance from '../../components/TableAttendance/TableAttendance';
 import PersonalAccount from '../../components/PersonalAccount/PersonalAccount';
 
 function DashBoardAdmin() {
-  const {header, menuService, content, startCard, barChart, wrapper, employees, department} = styles;
+  const {header, menuService, content, startCard, barChart, wrapper, employees, department, topSection} = styles;
 
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [totalDepartment, setTotalDepartment] = useState(0);
@@ -92,8 +92,11 @@ function DashBoardAdmin() {
                 </div>
               )}
               <div className={barChart}>
-                <HorizontalBarChart />
-                <Notification />
+                <div className={topSection}>
+                  <HorizontalBarChart />
+                  <Notification />
+                </div>
+                <MonthlySalaryChart />
               </div>
             </>
           )}
@@ -107,7 +110,7 @@ function DashBoardAdmin() {
             <div className={employees}>
               <h1>Lương & chấm công</h1>
               <ListUserTableSalari />
-              <TableAttendance/>
+              <TableAttendance />
             </div>
           )}
           {activeMenu === 'Phòng ban' && (
@@ -134,7 +137,7 @@ function DashBoardAdmin() {
           )}
           {activeMenu === 'Tài khoản cá nhân' && (
             <div className={department}>
-              <PersonalAccount/>
+              <PersonalAccount />
             </div>
           )}
         </div>

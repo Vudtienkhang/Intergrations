@@ -19,8 +19,7 @@
 
 .content {
   width: 900px;
-  max-height: 880px;
-  height: 1000px;
+  height: 740px;
   margin-left: 300px;
   padding: 10px;
   flex: 1;
@@ -35,12 +34,24 @@
 
 .barChart {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 50px;
-  margin: 50px 10px 20px 10px;
+  flex-direction: column; 
+  gap: 30px;
+  margin: 20px 10px 20px 10px;
   width: 100%;
 }
+
+.topSection {
+  display: flex;
+  justify-content: space-between;
+  gap: 50px;
+}
+
+.bottomSelection{
+  height: 300px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+
+}
+
 
 .employees,
 .department {

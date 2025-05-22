@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import styles from './styles.module.scss';
-import { MdBrowserUpdated } from 'react-icons/md';
-import { MdDeleteOutline } from 'react-icons/md';
-import { IoAdd } from "react-icons/io5";
+import {MdBrowserUpdated} from 'react-icons/md';
+import {MdDeleteOutline} from 'react-icons/md';
+import {IoAdd} from 'react-icons/io5';
 
 function ListPosition() {
-  const { listPosition, table, filterSection, actionBtn, editBtn, deleteBtn, modal, modalContent, modalActions } = styles;
+  const {listPosition, table, filterSection, actionBtn, editBtn, deleteBtn, modal, modalContent, modalActions, container_table} = styles;
 
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ function ListPosition() {
     MinSalary: '',
     MaxSalary: '',
   });
-  const [showAddModal, setShowAddModal] = useState(false);  
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -62,7 +62,7 @@ function ListPosition() {
   };
 
   const handleAddPosition = async () => {
-    const { PositionName, Description, MinSalary, MaxSalary } = newPosition;
+    const {PositionName, Description, MinSalary, MaxSalary} = newPosition;
     if (!PositionName || !MinSalary || !MaxSalary) {
       alert('Vui lòng nhập đầy đủ tên và lương!');
       return;
@@ -76,8 +76,8 @@ function ListPosition() {
         MaxSalary: parseInt(MaxSalary),
       });
 
-      setNewPosition({ PositionName: '', Description: '', MinSalary: '', MaxSalary: '' });
-      setShowAddModal(false); 
+      setNewPosition({PositionName: '', Description: '', MinSalary: '', MaxSalary: ''});
+      setShowAddModal(false);
       fetchData();
       alert('Thêm chức danh thành công!');
     } catch (error) {
@@ -85,7 +85,6 @@ function ListPosition() {
       alert('Thêm thất bại!');
     }
   };
-
 
   const renderEditModal = () => {
     if (!editing) return null;
@@ -95,19 +94,19 @@ function ListPosition() {
           <h3>Sửa chức danh</h3>
           <label>
             Tên:
-            <input type="text" value={editing.PositionName} onChange={(e) => setEditing({ ...editing, PositionName: e.target.value })} />
+            <input type="text" value={editing.PositionName} onChange={(e) => setEditing({...editing, PositionName: e.target.value})} />
           </label>
           <label>
             Mô tả:
-            <textarea value={editing.Description} onChange={(e) => setEditing({ ...editing, Description: e.target.value })} />
+            <textarea value={editing.Description} onChange={(e) => setEditing({...editing, Description: e.target.value})} />
           </label>
           <label>
             Lương tối thiểu:
-            <input type="number" value={editing.MinSalary} onChange={(e) => setEditing({ ...editing, MinSalary: parseInt(e.target.value) })} />
+            <input type="number" value={editing.MinSalary} onChange={(e) => setEditing({...editing, MinSalary: parseInt(e.target.value)})} />
           </label>
           <label>
             Lương tối đa:
-            <input type="number" value={editing.MaxSalary} onChange={(e) => setEditing({ ...editing, MaxSalary: parseInt(e.target.value) })} />
+            <input type="number" value={editing.MaxSalary} onChange={(e) => setEditing({...editing, MaxSalary: parseInt(e.target.value)})} />
           </label>
           <div className={modalActions}>
             <button onClick={handleUpdate}>Lưu</button>
@@ -126,34 +125,19 @@ function ListPosition() {
           <h3>Thêm chức danh mới</h3>
           <label>
             Tên chức danh:
-            <input
-              type="text"
-              value={newPosition.PositionName}
-              onChange={(e) => setNewPosition({ ...newPosition, PositionName: e.target.value })}
-            />
+            <input type="text" value={newPosition.PositionName} onChange={(e) => setNewPosition({...newPosition, PositionName: e.target.value})} />
           </label>
           <label>
             Mô tả:
-            <textarea
-              value={newPosition.Description}
-              onChange={(e) => setNewPosition({ ...newPosition, Description: e.target.value })}
-            />
+            <textarea value={newPosition.Description} onChange={(e) => setNewPosition({...newPosition, Description: e.target.value})} />
           </label>
           <label>
             Lương tối thiểu:
-            <input
-              type="number"
-              value={newPosition.MinSalary}
-              onChange={(e) => setNewPosition({ ...newPosition, MinSalary: e.target.value })}
-            />
+            <input type="number" value={newPosition.MinSalary} onChange={(e) => setNewPosition({...newPosition, MinSalary: e.target.value})} />
           </label>
           <label>
             Lương tối đa:
-            <input
-              type="number"
-              value={newPosition.MaxSalary}
-              onChange={(e) => setNewPosition({ ...newPosition, MaxSalary: e.target.value })}
-            />
+            <input type="number" value={newPosition.MaxSalary} onChange={(e) => setNewPosition({...newPosition, MaxSalary: e.target.value})} />
           </label>
           <div className={modalActions}>
             <button onClick={handleAddPosition}>Thêm</button>
@@ -171,54 +155,50 @@ function ListPosition() {
   return (
     <div className={listPosition}>
       <div className={filterSection}>
-        <input
-          type="text"
-          placeholder="Tìm theo tên chức danh"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <input type="text" placeholder="Tìm theo tên chức danh" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
         <button onClick={() => setShowAddModal(true)}>
           <IoAdd /> Thêm
         </button>
       </div>
-      <table className={table}>
-        <thead>
-          <tr>
-            <th>Position ID</th>
-            <th>Position Name</th>
-            <th>Description</th>
-            <th>Range Salary</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredPositions.length > 0 ? (
-            filteredPositions.map((pos) => (
-              <tr key={pos.PositionID}>
-                <td>{pos.PositionID}</td>
-                <td>{pos.PositionName}</td>
-                <td>{pos.Description}</td>
-                <td>
-                  {pos.MinSalary} - {pos.MaxSalary}
-                </td>
-                <td>
-                  <button className={`${actionBtn} ${editBtn}`} onClick={() => setEditing({ ...pos })}>
-                    <MdBrowserUpdated size={'24px'} />
-                  </button>
-                  <button className={`${actionBtn} ${deleteBtn}`} onClick={() => handleDelete(pos.PositionID)}>
-                    <MdDeleteOutline size={'24px'} />
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
+      <div className={container_table}>
+        <table className={table}>
+          <thead>
             <tr>
-              <td colSpan="6">Không có chức danh nào được tìm thấy.</td>
+              <th>Position ID</th>
+              <th>Position Name</th>
+              <th>Description</th>
+              <th>Range Salary</th>
+              <th>Actions</th>
             </tr>
-          )}
-        </tbody>
-      </table>
-
+          </thead>
+          <tbody>
+            {filteredPositions.length > 0 ? (
+              filteredPositions.map((pos) => (
+                <tr key={pos.PositionID}>
+                  <td>{pos.PositionID}</td>
+                  <td>{pos.PositionName}</td>
+                  <td>{pos.Description}</td>
+                  <td>
+                    {pos.MinSalary} - {pos.MaxSalary}
+                  </td>
+                  <td>
+                    <button className={`${actionBtn} ${editBtn}`} onClick={() => setEditing({...pos})}>
+                      <MdBrowserUpdated size={'24px'} />
+                    </button>
+                    <button className={`${actionBtn} ${deleteBtn}`} onClick={() => handleDelete(pos.PositionID)}>
+                      <MdDeleteOutline size={'24px'} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6">Không có chức danh nào được tìm thấy.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
       {renderEditModal()}
       {showAddModal && renderAddModal()}
     </div>

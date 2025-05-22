@@ -15,9 +15,16 @@
 }
 
 .table {
-  width: 100%;
+    width: 100%;
+
   border-collapse: collapse;
   font-size: 14px;
+}
+
+.container_table {
+
+  max-height: 500px;
+    overflow-y: auto;
 }
 
 .table th,
@@ -143,5 +150,3 @@
 .modalActions button:last-child:hover {
   background-color: #bbb;
 }
-
-

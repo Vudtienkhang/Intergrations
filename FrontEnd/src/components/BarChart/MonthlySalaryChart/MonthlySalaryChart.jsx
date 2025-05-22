@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {Bar} from 'react-chartjs-2';
 import {Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend} from 'chart.js';
-
+import styles from './styles.module.scss';
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 function MonthlySalaryChart() {
@@ -9,7 +9,7 @@ function MonthlySalaryChart() {
     labels: [],
     datasets: [],
   });
-
+  const {container} = styles;
   useEffect(() => {
     fetch('http://localhost:3000/api/getMonthlySalaryReport')
       .then((res) => res.json())
@@ -36,6 +36,7 @@ function MonthlySalaryChart() {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {position: 'top'},
       title: {
@@ -51,7 +52,7 @@ function MonthlySalaryChart() {
   };
 
   return (
-    <div style={{height: '400px'}}>
+    <div className={container}>
       <Bar data={chartData} options={options} />
     </div>
   );
