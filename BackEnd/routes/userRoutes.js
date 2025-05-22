@@ -53,4 +53,7 @@ router.get("/getSalaryByEmployeeID", userController.getSalariById)
 router.get("/getAllAttendance", userController.getAllAttendance)
 router.put("/updateMyProfile/:EmployeeID", userController.updateMyProfile)
 router.post("/import", userController.importExcel)
+router.get("/getCountStatus", userController.getCountStatus)
+router.get("/getCountGender", userController.getCountGender)
+
 module.exports = router;

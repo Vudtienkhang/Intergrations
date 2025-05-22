@@ -1257,3 +1257,28 @@ exports.importExcel = async (req, res) => {
     });
   }
 };
+
+exports.getCountStatus = async (req, res) =>{
+  try{
+    const pool = await connectSQL();
+    const result = await pool
+      .request()
+      .query("SELECT Status, COUNT(*) AS SoLuong FROM Employees GROUP BY Status")
+    return res.status(200).json(result.recordset)
+  }catch (error){
+    console.error("Lỗi Server: ", error)
+    return res.status(500).json({message:"Lỗi máy chủ"})
+  }
+}
+
+exports.getCountGender = async (req,res)=>{
+  try{
+    const pool = await connectSQL()
+    const result = await pool
+      .request()
+      .query("SELECT Gender, COUNT(*) AS SoLuong FROM Employees GROUP BY Gender")
+    return res.status(200).json(result.recordset)
+  }catch(err){
+    return res.status(500).json({message:"Lỗi máy chủ!"})
+  }
+}
