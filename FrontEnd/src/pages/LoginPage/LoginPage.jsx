@@ -11,9 +11,13 @@ function LoginPage() {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+
+  // Phần cho quên mật khẩu
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [step, setStep] = useState(1); // 1: gửi mã, 2: nhập mã + mk mới
+
   const navigate = useNavigate();
   const {toast} = useContext(ToastContext);
 
@@ -27,7 +31,6 @@ function LoginPage() {
 
       localStorage.setItem('user', JSON.stringify(res.data));
       toast.success('Đăng nhập thành công!');
-
       navigate('/dashboardadmin');
     } catch (error) {
       const msg = error.response?.data?.message || 'Đã xảy ra lỗi khi đăng nhập.';
@@ -35,17 +38,40 @@ function LoginPage() {
     }
   };
 
+  const handleSendCode = async (e) => {
+    e.preventDefault();
+    if (!email) {
+      toast.error('Vui lòng nhập email');
+      return;
+    }
+    try {
+      await axios.post('http://localhost:3000/api/sendVerificationCode', {email});
+      toast.success('Mã xác nhận đã được gửi đến email');
+      setStep(2);
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Lỗi khi gửi mã xác nhận.';
+      toast.error(msg);
+    }
+  };
+
   const handleResetPassword = async (e) => {
     e.preventDefault();
+    if (!verificationCode || !newPassword) {
+      toast.error('Vui lòng nhập đầy đủ mã xác nhận và mật khẩu mới');
+      return;
+    }
     try {
-      await axios.post('http://localhost:3000/api/forgotPassword', {
+      await axios.post('http://localhost:3000/api/resetPassword', {
         email,
-        phone,
+        code: verificationCode,
         newPassword,
       });
-
       toast.success('Đặt lại mật khẩu thành công!');
       setIsForgotPassword(false);
+      setStep(1);
+      setEmail('');
+      setVerificationCode('');
+      setNewPassword('');
     } catch (error) {
       const msg = error.response?.data?.message || 'Lỗi khi đặt lại mật khẩu.';
       toast.error(msg);
@@ -56,24 +82,27 @@ function LoginPage() {
     <div className={loginContainer}>
       <div className={loginForm}>
         <h1 className={title}>Hệ thống Quản lý Nhân sự</h1>
-        <p className={subtitle}>{isForgotPassword ? 'Đặt lại mật khẩu' : 'Đăng nhập vào tài khoản'}</p>
+        <p className={subtitle}>{isForgotPassword ? (step === 1 ? 'Nhập email để nhận mã xác nhận' : 'Nhập mã xác nhận và mật khẩu mới') : 'Đăng nhập vào tài khoản'}</p>
 
-        <form onSubmit={isForgotPassword ? handleResetPassword : handleLogin}>
+        <form onSubmit={isForgotPassword ? (step === 1 ? handleSendCode : handleResetPassword) : handleLogin}>
           {isForgotPassword ? (
-            <>
+            step === 1 ? (
               <div className={formGroup}>
                 <label className={label}>Email</label>
                 <input type="email" placeholder="Email" className={input} value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
-              <div className={formGroup}>
-                <label className={label}>Số điện thoại</label>
-                <input type="tel" placeholder="Số điện thoại" className={input} value={phone} onChange={(e) => setPhone(e.target.value)} required />
-              </div>
-              <div className={formGroup}>
-                <label className={label}>Mật khẩu mới</label>
-                <input type="password" placeholder="Mật khẩu mới" className={input} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-              </div>
-            </>
+            ) : (
+              <>
+                <div className={formGroup}>
+                  <label className={label}>Mã xác nhận</label>
+                  <input type="text" placeholder="Mã xác nhận" className={input} value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)} required />
+                </div>
+                <div className={formGroup}>
+                  <label className={label}>Mật khẩu mới</label>
+                  <input type="password" placeholder="Mật khẩu mới" className={input} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+                </div>
+              </>
+            )
           ) : (
             <>
               <div className={formGroup}>
@@ -91,11 +120,21 @@ function LoginPage() {
             </>
           )}
 
-          <button type="button" className={forgotPassword} onClick={() => setIsForgotPassword(!isForgotPassword)}>
+          <button
+            type="button"
+            className={forgotPassword}
+            onClick={() => {
+              setIsForgotPassword(!isForgotPassword);
+              setStep(1);
+              setEmail('');
+              setVerificationCode('');
+              setNewPassword('');
+            }}
+          >
             {isForgotPassword ? 'Quay lại đăng nhập' : 'Quên mật khẩu?'}
           </button>
 
-          <Button name={isForgotPassword ? 'Xác nhận' : 'Đăng nhập'} className={btnLogin} type="submit" />
+          <Button name={isForgotPassword ? (step === 1 ? 'Gửi mã' : 'Xác nhận đổi mật khẩu') : 'Đăng nhập'} className={btnLogin} type="submit" />
         </form>
       </div>
       <div className={loginInfo}>

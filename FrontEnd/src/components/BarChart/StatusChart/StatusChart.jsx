@@ -14,9 +14,9 @@ const StatusChart = () => {
       .then((response) => {
         const data = response.data;
 
-        const labels = data.map((item) => item.Status);
+        const labels = data.map((item) => item.Status || "Chưa xác định");
         const values = data.map((item) => item.SoLuong);
-        const colors = ['#4caf50', '#ffc107', '#f44336'];
+        const colors = ['#4caf50', '#ffc107', '#f44336', '#808080'];
 
         setChartData({
           labels,
@@ -35,11 +35,7 @@ const StatusChart = () => {
       });
   }, []);
 
-  return (
-    <div style={{width: '250px', height:"250px", margin: '0 auto'}}>
-      {chartData ? <Pie data={chartData} /> : <p>Đang tải dữ liệu...</p>}
-    </div>
-  );
+  return <div style={{width: '250px', height: '250px', margin: '0 auto'}}>{chartData ? <Pie data={chartData} /> : <p>Đang tải dữ liệu...</p>}</div>;
 };
 
 export default StatusChart;

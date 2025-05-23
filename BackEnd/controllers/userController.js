@@ -1,7 +1,10 @@
 const mysqlConnection = require("../config/mySql.js");
 const connectSQL = require("../config/sqlServer.js");
+const transporter = require("../config/email.js"); 
+
 const sql = require("mssql");
 const bcrypt = require("bcrypt");
+
 exports.login = (req, res) => {
   const { username, password } = req.body;
 
@@ -39,25 +42,36 @@ exports.login = (req, res) => {
   });
 };
 
-exports.forgotPassword = async (req, res) => {
-  const { email, phone, newPassword } = req.body;
+exports.resetPassword = async (req, res) => {
+  const { email, code, newPassword } = req.body;
+
+  if (!email || !code || !newPassword) {
+    return res.status(400).json({ message: 'Vui lòng nhập đầy đủ email, mã xác nhận và mật khẩu mới.' });
+  }
 
   try {
+    const record = verificationCodes[email];
+    if (!record) {
+      return res.status(400).json({ message: 'Chưa gửi mã xác nhận hoặc mã không tồn tại.' });
+    }
+
+    if (record.code !== code) {
+      return res.status(400).json({ message: 'Mã xác nhận không đúng.' });
+    }
+
+    if (Date.now() > record.expires) {
+      return res.status(400).json({ message: 'Mã xác nhận đã hết hạn.' });
+    }
+
     const pool = await connectSQL();
 
     const result = await pool
       .request()
       .input("email", sql.VarChar, email)
-      .input("phone", sql.VarChar, phone)
-      .query(
-        "SELECT EmployeeID FROM Employees WHERE Email = @email AND PhoneNumber = @phone"
-      );
+      .query("SELECT EmployeeID FROM Employees WHERE Email = @email");
 
     if (result.recordset.length === 0) {
-      return res.status(404).json({
-        message:
-          "Email hoặc số điện thoại không tồn tại trong hệ thống nhân sự.",
-      });
+      return res.status(404).json({ message: "Email không tồn tại trong hệ thống nhân sự." });
     }
 
     const userId = result.recordset[0].EmployeeID;
@@ -74,16 +88,17 @@ exports.forgotPassword = async (req, res) => {
         }
 
         if (mysqlResult.affectedRows === 0) {
-          return res
-            .status(404)
-            .json({ message: "Không tìm thấy tài khoản trong hệ thống." });
+          return res.status(404).json({ message: "Không tìm thấy tài khoản trong hệ thống." });
         }
+
+        delete verificationCodes[email];
 
         res.json({ message: "Đặt lại mật khẩu thành công." });
       }
     );
+
   } catch (error) {
-    console.error("🔥 Lỗi xử lý quên mật khẩu:", error);
+    console.error("🔥 Lỗi xử lý reset password:", error);
     res.status(500).json({ message: "Đã xảy ra lỗi máy chủ." });
   }
 };
@@ -1258,27 +1273,60 @@ exports.importExcel = async (req, res) => {
   }
 };
 
-exports.getCountStatus = async (req, res) =>{
-  try{
+exports.getCountStatus = async (req, res) => {
+  try {
     const pool = await connectSQL();
     const result = await pool
       .request()
-      .query("SELECT Status, COUNT(*) AS SoLuong FROM Employees GROUP BY Status")
-    return res.status(200).json(result.recordset)
-  }catch (error){
-    console.error("Lỗi Server: ", error)
-    return res.status(500).json({message:"Lỗi máy chủ"})
+      .query(
+        "SELECT Status, COUNT(*) AS SoLuong FROM Employees GROUP BY Status"
+      );
+    return res.status(200).json(result.recordset);
+  } catch (error) {
+    console.error("Lỗi Server: ", error);
+    return res.status(500).json({ message: "Lỗi máy chủ" });
   }
-}
+};
 
-exports.getCountGender = async (req,res)=>{
-  try{
-    const pool = await connectSQL()
+exports.getCountGender = async (req, res) => {
+  try {
+    const pool = await connectSQL();
     const result = await pool
       .request()
-      .query("SELECT Gender, COUNT(*) AS SoLuong FROM Employees GROUP BY Gender")
-    return res.status(200).json(result.recordset)
-  }catch(err){
-    return res.status(500).json({message:"Lỗi máy chủ!"})
+      .query(
+        "SELECT Gender, COUNT(*) AS SoLuong FROM Employees GROUP BY Gender"
+      );
+    return res.status(200).json(result.recordset);
+  } catch (err) {
+    return res.status(500).json({ message: "Lỗi máy chủ!" });
   }
-}
+};
+
+let verificationCodes = {};
+
+exports.sendVerificationCode = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Vui lòng nhập email!" });
+  }
+
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expires = Date.now() + 5 * 60 * 1000; 
+
+  verificationCodes[email] = { code, expires };
+
+  try {
+    await transporter.sendMail({
+      from: `"HR System" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Mã xác nhận đặt lại mật khẩu",
+      text: `Mã xác nhận của bạn là: ${code}. Mã có hiệu lực trong 5 phút.`,
+    });
+
+    res.json({ message: "Mã xác nhận đã được gửi đến email." });
+  } catch (err) {
+    console.error("Email send error:", err);
+    res.status(500).json({ message: "Lỗi khi gửi mã xác nhận." });
+  }
+};

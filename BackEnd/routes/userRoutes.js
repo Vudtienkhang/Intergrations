@@ -8,7 +8,7 @@ const userController = require("../controllers/userController.js");
 router.post("/login", userController.login); // Đăng nhập
 router.get("/getAccount", userController.getaccount); // Lấy danh sách tài khoản
 router.post("/addAccount", userController.addAccount); // Thêm tài khoản
-router.post("/forgotPassword", userController.forgotPassword); // quên mật khẩu
+router.post("/resetPassword", userController.resetPassword); // quên mật khẩu
 
 
 // ==================== EMPLOYEE ====================
@@ -55,5 +55,6 @@ router.put("/updateMyProfile/:EmployeeID", userController.updateMyProfile)
 router.post("/import", userController.importExcel)
 router.get("/getCountStatus", userController.getCountStatus)
 router.get("/getCountGender", userController.getCountGender)
+router.post("/sendVerificationCode", userController.sendVerificationCode);
 
 module.exports = router;
