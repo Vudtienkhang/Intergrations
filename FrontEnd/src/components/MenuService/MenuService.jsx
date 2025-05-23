@@ -6,7 +6,7 @@ import { SiGoogleclassroom } from "react-icons/si";
 import { GiPositionMarker } from "react-icons/gi";
 import { MdOutlineAttachMoney, MdOutlineAccountCircle } from "react-icons/md";
 import { CiLogout } from "react-icons/ci";
-
+import { IoMdTime } from "react-icons/io";
 import styles from './styles.module.scss';
 
 const menuData = [
@@ -16,7 +16,7 @@ const menuData = [
   { id: 4, label: 'Phòng ban', icon: <SiGoogleclassroom size={22} />, path: '/dashboard/departments' },
   { id: 5, label: 'Chức danh', icon: <GiPositionMarker size={22} />, path: '/dashboard/positions' },
   { id: 6, label: 'Tài khoản', icon: <MdOutlineAccountCircle size={22} />, path: '/dashboard/accounts' },
-  { id: 7, label: 'Chấm công', icon: <MdOutlineAccountCircle size={22} />, path: '/dashboard/timekeeping' },
+  { id: 7, label: 'Chấm công', icon: <IoMdTime size={22} />, path: '/dashboard/timekeeping' },
   { id: 8, label: 'Tài khoản cá nhân', icon: <MdOutlineAccountCircle size={22} />, path: '/dashboard/personal-account' },
 ];
 
