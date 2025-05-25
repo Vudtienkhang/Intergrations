@@ -2,7 +2,7 @@ import React, {useState, useEffect, useContext} from 'react';
 import styles from './styles.module.scss';
 import Button from '../Button/Button';
 import {ToastContext} from '../../Contexts/ToastProvider';
-
+import axios from 'axios';
 function ListUserTableSalari() {
   const {container, message, table, tableHead, controls, searchInput, btn, btn_delete, salaryForm} = styles;
 
@@ -181,14 +181,46 @@ function ListUserTableSalari() {
 
   const filteredData = data.filter((item) => {
     const fullNameMatch = item.FullName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const salaryDate = new Date(item.SalaryMonth);
+    if (isNaN(salaryDate.getTime())) {
+      console.warn('Invalid SalaryMonth:', item.SalaryMonth);
+      return false;
+    }
 
-    const month = item.SalaryMonth.getMonth() + 1;
-    const year = item.SalaryMonth.getFullYear();
+    const month = salaryDate.getMonth() + 1;
+    const year = salaryDate.getFullYear();
     const monthMatch = !filterMonth || String(month).padStart(2, '0') === filterMonth;
     const yearMatch = !filterYear || String(year) === filterYear;
 
     return fullNameMatch && monthMatch && yearMatch;
   });
+
+  const handleSendPayrollEmail = async (salary) => {
+    try {
+      const payload = {
+        EmployeeID: salary.EmployeeID,
+        SalaryID: salary.SalaryID,
+        BaseSalary: salary.BaseSalary,
+        Bonus: salary.Bonus,
+        Deductions: salary.Deductions,
+        NetSalary: salary.NetSalary,
+        SalaryMonth: new Date(salary.SalaryMonth).toISOString().slice(0, 10),
+      };
+
+      console.log('Dữ liệu', payload);
+
+      const response = await axios.post('/api/sendPayroll', payload);
+
+      if (response.status === 200) {
+        toast.success('Gửi email lương thành công!');
+      } else {
+        toast.error('Gửi email thất bại!');
+      }
+    } catch (error) {
+      toast.error('Lỗi khi gửi email: ' + (error.response?.data?.message || error.message));
+      console.log('lỗi', error);
+    }
+  };
 
   return (
     <div className={container}>
@@ -229,6 +261,7 @@ function ListUserTableSalari() {
               <th>Thưởng</th>
               <th>Khấu trừ</th>
               <th>Lương thực nhận</th>
+              <th></th>
               <th></th>
               <th></th>
             </tr>
@@ -273,6 +306,9 @@ function ListUserTableSalari() {
                   </td>
                   <td>
                     <Button name={'Xóa'} className={btn_delete} onClick={() => handleDeleteSalary(item.SalaryID)} />
+                  </td>
+                  <td>
+                    <Button name={'Gửi email!'} onClick={() => handleSendPayrollEmail(item)} />
                   </td>
                 </tr>
               ))

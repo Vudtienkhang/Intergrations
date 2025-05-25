@@ -26,7 +26,7 @@ function SalaryChart() {
     <div className={styles.chartContainer}>
       <h2 className={styles.chartTitle}>Biểu đồ Lương theo tháng</h2>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
+        <LineChart data={data} margin={{ top: 20, right: 30, left: 40, bottom: 5 }} >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="Month" />
           <YAxis />

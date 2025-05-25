@@ -11,6 +11,8 @@ import {MdOutlineSystemUpdateAlt, MdDeleteOutline} from 'react-icons/md';
 import {ToastContext} from '../../Contexts/ToastProvider';
 import {exportEmployeesToExcel} from '../../utils/exportExcel';
 import {importEmployeesFromExcel} from '../../utils/importExcel';
+import StatusToggle from '../StatusToggle/StatusToggle';
+import ListCardEmployees from '../ListCardEmployees/ListCardEmployees';
 
 function Table_Employees() {
   const [employees, setEmployees] = useState([]);
@@ -20,7 +22,8 @@ function Table_Employees() {
   const [selectedPosition, setSelectedPosition] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const fileInputRef = useRef(null);
-  const {functions, infor, header, table, table_dark, tbImg, groupEmployee, nameBold, modal_backdrop, btn_add, btn, statusWorking, statusQuit, statusLeave, container_table, btn_import, btn_export, container_btn} = styles;
+  const [isCardView, setIsCardView] = useState(false);
+  const {functions, infor, toggle,header, table, table_dark, tbImg, groupEmployee, nameBold, modal_backdrop, btn_add, btn, statusWorking, statusQuit, statusLeave, container_table, btn_import, btn_export, container_btn} = styles;
 
   const {toast} = useContext(ToastContext);
   const getStatusClass = (status) => {
@@ -94,7 +97,10 @@ function Table_Employees() {
     <div className="container-fluid mt-3" style={{maxHeight: '850px', overflowY: 'auto'}}>
       <div className={functions}>
         <div className={header}>
-          <h1>Employees</h1>
+          <div className={toggle}>
+            <h1>Employees</h1>
+            <StatusToggle isActive={isCardView} onToggle={() => setIsCardView(!isCardView)} />
+          </div>
           <div className={container_btn}>
             <button className={btn_add} onClick={() => setShowAddUser(true)}>
               <IoIosAdd /> Thêm
@@ -104,7 +110,7 @@ function Table_Employees() {
               Nhập từ Excel
             </button>
             <button className={btn_export} onClick={() => exportEmployeesToExcel(employees)}>
-              xuất excel
+              Xuất excel
             </button>
           </div>
         </div>
@@ -148,52 +154,56 @@ function Table_Employees() {
         </div>
       </div>
       <div className={container_table}>
-        <table className={table}>
-          <thead className={table_dark}>
-            <tr>
-              <th>Thông tin nhân viên</th>
-              <th>Số điện thoại</th>
-              <th>Ngày vào làm</th>
-              <th>Ngày sinh nhật</th>
-              <th>Vị trí</th>
-              <th>Phòng ban</th>
-              <th>Trạng thái</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredEmployees.map((emp) => (
-              <tr key={emp.EmployeeID}>
-                <td className={groupEmployee}>
-                  <Tippy content={<img src={emp.Img_url} alt={`Ảnh nhân viên ${emp.FullName}`} style={{width: '200px', height: '200px', objectFit: 'cover', borderRadius: '8px'}} />} placement="right" animation="scale" theme="light" interactive={true} delay={[200, 0]}>
-                    <div className={groupEmployee}>
-                      <img src={emp.Img_url} alt="" className={tbImg} />
-                      <div className={infor}>
-                        <span className={nameBold}>{emp.FullName}</span>
-                        <div>{emp.Email}</div>
-                        <div>ID: {emp.EmployeeID}</div>
-                      </div>
-                    </div>
-                  </Tippy>
-                </td>
-                <td>{emp.PhoneNumber}</td>
-                <td>{moment(emp.HireDate).format('DD/MM/YYYY')}</td>
-                <td>{moment(emp.DateOfBirth).format('DD/MM/YYYY')}</td>
-                <td>{emp.PositionName}</td>
-                <td>{emp.DepartmentName}</td>
-                <td className={getStatusClass(emp.Status)}>{emp.Status}</td>
-                <td>
-                  <button className={btn} onClick={() => setSelectedEmployeeID(emp.EmployeeID)}>
-                    <MdOutlineSystemUpdateAlt size="24px" />
-                  </button>
-                  <button className={btn} onClick={() => handleDelete(emp.EmployeeID)}>
-                    <MdDeleteOutline size="24px" />
-                  </button>
-                </td>
+        {isCardView ? (
+          <ListCardEmployees employees={filteredEmployees} />
+        ) : (
+          <table className={table}>
+            <thead className={table_dark}>
+              <tr>
+                <th>Thông tin nhân viên</th>
+                <th>Số điện thoại</th>
+                <th>Ngày vào làm</th>
+                <th>Ngày sinh nhật</th>
+                <th>Vị trí</th>
+                <th>Phòng ban</th>
+                <th>Trạng thái</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredEmployees.map((emp) => (
+                <tr key={emp.EmployeeID}>
+                  <td className={groupEmployee}>
+                    <Tippy content={<img src={emp.Img_url} alt={`Ảnh nhân viên ${emp.FullName}`} style={{width: '200px', height: '200px', objectFit: 'cover', borderRadius: '8px'}} />} placement="right" animation="scale" theme="light" interactive={true} delay={[200, 0]}>
+                      <div className={groupEmployee}>
+                        <img src={emp.Img_url} alt="" className={tbImg} />
+                        <div className={infor}>
+                          <span className={nameBold}>{emp.FullName}</span>
+                          <div>{emp.Email}</div>
+                          <div>ID: {emp.EmployeeID}</div>
+                        </div>
+                      </div>
+                    </Tippy>
+                  </td>
+                  <td>{emp.PhoneNumber}</td>
+                  <td>{moment(emp.HireDate).format('DD/MM/YYYY')}</td>
+                  <td>{moment(emp.DateOfBirth).format('DD/MM/YYYY')}</td>
+                  <td>{emp.PositionName}</td>
+                  <td>{emp.DepartmentName}</td>
+                  <td className={getStatusClass(emp.Status)}>{emp.Status}</td>
+                  <td>
+                    <button className={btn} onClick={() => setSelectedEmployeeID(emp.EmployeeID)}>
+                      <MdOutlineSystemUpdateAlt size="24px" />
+                    </button>
+                    <button className={btn} onClick={() => handleDelete(emp.EmployeeID)}>
+                      <MdDeleteOutline size="24px" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {selectedEmployeeID && (

@@ -51,7 +51,6 @@ const euclideanDistance = (a, b) => {
 };
 
 exports.loginFace = (req, res) => {
-  
   const { faceDescriptor } = req.body;
   if (!faceDescriptor || !Array.isArray(faceDescriptor)) {
     return res
@@ -71,7 +70,7 @@ exports.loginFace = (req, res) => {
     let minDistance = Infinity;
 
     results.forEach((user) => {
-      if (!user.Face_Descriptor) return; 
+      if (!user.Face_Descriptor) return;
 
       let dbDescriptor;
       try {
@@ -1170,7 +1169,9 @@ exports.addAccount = async (req, res) => {
         (err, result) => {
           if (err) {
             console.error("Lỗi thêm tài khoản: ", err);
-            return res.status(500).json({ message: "Không thể thêm tài khoản" });
+            return res
+              .status(500)
+              .json({ message: "Không thể thêm tài khoản" });
           }
           return res.status(200).json({ message: "Tạo tài khoản thành công" });
         }
@@ -1181,7 +1182,6 @@ exports.addAccount = async (req, res) => {
     }
   });
 };
-
 
 exports.addTimekeeping = (req, res) => {
   const { employeeID, type, date } = req.body;
@@ -1468,4 +1468,89 @@ exports.sendVerificationCode = async (req, res) => {
     console.error("Email send error:", err);
     res.status(500).json({ message: "Lỗi khi gửi mã xác nhận." });
   }
+};
+
+exports.sendPayroll = (req, res) => {
+  const { EmployeeID } = req.body;
+
+  if (!EmployeeID) {
+    return res.status(400).json({ message: "Thiếu employeeId!" });
+  }
+
+  mysqlConnection.query(
+    "SELECT BaseSalary, Bonus, Deductions, NetSalary, SalaryMonth FROM salaries WHERE EmployeeID = ? ORDER BY SalaryMonth DESC LIMIT 1",
+    [EmployeeID],
+    async (err, payrollRows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Lỗi truy vấn MySQL!" });
+      }
+
+      if (payrollRows.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "Không tìm thấy dữ liệu bảng lương!" });
+      }
+
+      const payroll = payrollRows[0];
+
+      try {
+        // Kết nối SQL Server và các bước tiếp theo...
+        const pool = await sql.connect(connectSQL);
+        const result = await pool
+          .request()
+          .input("employeeId", sql.VarChar, EmployeeID.toString())
+
+          .query(
+            "SELECT FullName, Email FROM Employees WHERE EmployeeID = @employeeId"
+          );
+
+        if (result.recordset.length === 0) {
+          return res.status(404).json({ message: "Không tìm thấy nhân viên!" });
+        }
+
+        const { FullName, Email } = result.recordset[0];
+
+        const formattedMonth = new Date(payroll.SalaryMonth).toLocaleDateString(
+          "vi-VN",
+          {
+            year: "numeric",
+            month: "2-digit",
+          }
+        );
+
+        const htmlContent = `
+          <h3>Bảng lương tháng ${formattedMonth}</h3>
+          <p>Nhân viên: <strong>${FullName}</strong></p>
+          <ul>
+            <li>Lương cơ bản: ${(
+              +payroll.BaseSalary || 0
+            ).toLocaleString()} VND</li>
+            <li>Thưởng: ${(+payroll.Bonus || 0).toLocaleString()} VND</li>
+            <li>Khấu trừ: ${(
+              +payroll.Deductions || 0
+            ).toLocaleString()} VND</li>
+            <li>Thực nhận: ${(
+              +payroll.NetSalary || 0
+            ).toLocaleString()} VND</li>
+          </ul>
+          <p>Trân trọng</p>
+        `;
+
+        await transporter.sendMail({
+          from: `"HR System" <${process.env.EMAIL_USER}>`,
+          to: Email,
+          subject: `Bảng lương tháng ${formattedMonth}`,
+          html: htmlContent,
+        });
+
+        res.json({
+          message: `Đã gửi bảng lương tháng ${formattedMonth} cho ${Email}`,
+        });
+      } catch (error) {
+        console.error("Lỗi khi gửi bảng lương:", error);
+        res.status(500).json({ message: "Lỗi khi gửi bảng lương!" });
+      }
+    }
+  );
 };

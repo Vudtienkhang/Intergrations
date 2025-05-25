@@ -1,44 +1,21 @@
 import styles from './styles.module.scss';
-import { FiUsers } from 'react-icons/fi';
-import { CiPen } from 'react-icons/ci';
-import { MdOutlineDeleteOutline } from 'react-icons/md';
-import { useState } from 'react';
+import {FiUsers} from 'react-icons/fi';
+import {MdOutlineDeleteOutline} from 'react-icons/md';
 import axios from 'axios';
-import EmployeeDepartment from '../EmployeeDepartment/EmployeeDepartment';
+import {useNavigate} from 'react-router-dom';
 
-function Department({ departmentId, departmentName, employeeCount, description, onDelete }) {
-  const {
-    department_card,
-    department_header,
-    department_icon,
-    edit_icon,
-    employee_count,
-    descriptions,
-    view_details,
-    department_header__one,
-  } = styles;
-
-  const [showEmployees, setShowEmployees] = useState(false);
-  const [employees, setEmployees] = useState([]);
-
-  const handleToggleDetails = async () => {
-    if (!showEmployees) {
-      try {
-        const response = await axios.get(`http://localhost:3000/api/getDepartment/${departmentId}`);
-        setEmployees(response.data);
-      } catch (error) {
-        console.error('Lỗi khi lấy danh sách nhân viên:', error);
-      }
-    }
-    setShowEmployees(!showEmployees);
+function Department({departmentId, departmentName, employeeCount, description, onDelete}) {
+  const {department_card, department_header, department_icon, edit_icon, employee_count, descriptions, view_details, department_header__one} = styles;
+  const navigate = useNavigate();
+  const handleViewDetail = () => {
+    navigate(`/dashboard/departments/${departmentId}`);
   };
-
   const handleDeleteDepartment = async () => {
     if (window.confirm('Bạn có chắc chắn muốn xoá phòng ban này?')) {
       try {
         await axios.delete(`http://localhost:3000/api/deletedDepartments/${departmentId}`);
         alert('Đã xoá phòng ban!');
-        if (onDelete) onDelete(departmentId); 
+        if (onDelete) onDelete(departmentId);
       } catch (error) {
         console.error('Lỗi khi xoá phòng ban:', error);
         alert('Xoá thất bại!');
@@ -50,7 +27,7 @@ function Department({ departmentId, departmentName, employeeCount, description, 
     <div className={department_card}>
       <div className={department_header}>
         <div className={department_header__one}>
-          <span className={department_icon} onClick={handleDeleteDepartment} >
+          <span className={department_icon} onClick={handleDeleteDepartment}>
             <FiUsers size={'24px'} />
           </span>
           <h3>{departmentName}</h3>
@@ -63,11 +40,9 @@ function Department({ departmentId, departmentName, employeeCount, description, 
       </div>
       <p className={employee_count}>{employeeCount} employees</p>
       <p className={descriptions}>{description}</p>
-      <button className={view_details} onClick={handleToggleDetails}>
-        {showEmployees ? 'Hide details' : 'View details'}
+      <button className={view_details} onClick={handleViewDetail}>
+        View detail
       </button>
-
-      {showEmployees && <EmployeeDepartment employees={employees} />}
     </div>
   );
 }

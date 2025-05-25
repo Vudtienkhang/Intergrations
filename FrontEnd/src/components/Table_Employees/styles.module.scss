@@ -12,6 +12,11 @@
   max-height: 500px;
 }
 
+.toggle{
+  display: flex;
+  gap: 10px;
+}
+
 .table th,
 .table td {
   height: 150px;

@@ -55,8 +55,9 @@ router.put("/updateMyProfile/:EmployeeID", userController.updateMyProfile)
 router.post("/import", userController.importExcel)
 router.get("/getCountStatus", userController.getCountStatus)
 router.get("/getCountGender", userController.getCountGender)
-router.post("/sendVerificationCode", userController.sendVerificationCode);
+router.post("/sendVerificationCode", userController.sendVerificationCode);//gửi email lấy lại mk
 router.get("/getTimekeepingByEmployee/:EmployeeID", userController.getTimekeepingByEmployee);
 router.post("/toggleAccountStatus", userController.toggleAccountStatus)
 router.post("/loginByFace", userController.loginFace)
+router.post("/sendPayroll", userController.sendPayroll)
 module.exports = router;

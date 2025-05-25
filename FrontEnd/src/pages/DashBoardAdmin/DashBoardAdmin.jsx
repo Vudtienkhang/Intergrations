@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useLocation} from 'react-router-dom';
+import {useLocation, useParams} from 'react-router-dom';
 import axios from 'axios';
 import Header from '../../components/Header/Header';
 import MenuService from '../../components/MenuService/MenuService';
@@ -24,15 +24,13 @@ import GenderChart from '../../components/BarChart/GenderChart/GenderChart';
 
 function DashBoardAdmin() {
   const {header, menuService, content, startCard, barChart, wrapper, employees, department, topSection, bottomSection, pieChart} = styles;
-
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [totalDepartment, setTotalDepartment] = useState(0);
   const [totalSalary, setTotalSalary] = useState(0);
   const [currentMonth, setCurrentMonth] = useState('');
   const location = useLocation();
-
   const roleId = JSON.parse(localStorage.getItem('user'))?.role;
-
+  const {id} = useParams()
   useEffect(() => {
     axios
       .get('http://localhost:3000/api/gettotalEmployees')

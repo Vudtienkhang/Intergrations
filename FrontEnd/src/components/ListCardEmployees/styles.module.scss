@@ -1,0 +1,36 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 16px;
+}
+
+.controlPanel {
+  margin-bottom: 12px;
+  select {
+    margin-left: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+}
+
+.pagination {
+  display: flex;
+  list-style: none;
+  justify-content: center;
+  margin-top: 16px;
+
+  li {
+    margin: 0 4px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .active {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+  }
+}
