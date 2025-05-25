@@ -36,7 +36,7 @@ const GenderChart = () => {
   }, []);
 
   return (
-    <div style={{width: '250px', height:"250px", margin: '0 auto'}}>
+    <div style={{width: '250px', height:"250px", margin: '0 20 0 0'}}>
       {chartData ? <Pie data={chartData} /> : <p>Đang tải dữ liệu...</p>}
     </div>
   );

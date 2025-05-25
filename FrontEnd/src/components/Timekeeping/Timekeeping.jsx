@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import axios from 'axios';
 import TableTimeKeepingByID from '../TableTimeKeepingByID/TableTimeKeepingByID';
 import TimekeepingChart from '../TimeKeepingChart/TimeKeepingChart';
@@ -48,7 +48,6 @@ function Timekeeping() {
       setButtonsVisible(false);
 
       await fetchTimekeepingData();
-
     } catch (err) {
       if (err.response && err.response.data?.message === 'Đã chấm công hôm nay!') {
         setStatus('Bạn đã chấm công hôm nay rồi!');
@@ -79,11 +78,9 @@ function Timekeeping() {
       )}
       <div className={styles.report}>
         <div className={styles.tableTimeKeeping}>
-
           <TableTimeKeepingByID data={timekeepingData} />
         </div>
         <div className={styles.timekeepingChart}>
-
           <TimekeepingChart data={timekeepingData} />
         </div>
       </div>

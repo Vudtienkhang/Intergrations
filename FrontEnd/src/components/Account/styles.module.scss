@@ -73,23 +73,6 @@
   margin-bottom: 15px;
 }
 
-.accountForm {
-  width: 480px;
-  padding: 25px 30px;
-  border-radius: 10px;
-  background-color: #fefefe;
-  position: absolute;
-  top: 50%;
-  left: 55%;
-  transform: translate(-50%, -50%);
-  z-index: 100;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease-in-out;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -101,80 +84,9 @@
   }
 }
 
-.formHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-
-  h3 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #333;
-  }
-}
-
-.closeIcon {
-  cursor: pointer;
-  color: #777;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: #e74c3c;
-  }
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
-}
-
-select,
-input {
-  margin-top: 5px;
-  padding: 10px;
-  font-size: 14px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
-  outline: none;
-  transition: border 0.2s;
-
-  &:focus {
-    border-color: #007bff;
-    background-color: #fff;
-  }
-}
-
-.buttonGroup {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-
-  button {
-    width: 100%;
-    background-color: #4caf50;
-    color: white;
-    padding: 10px 20px;
-    font-weight: 600;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-
-    &:hover {
-      background-color: #45a049;
-      transform: translateY(-2px);
-    }
-
-    &:active {
-      background-color: #3e8e41;
-      transform: translateY(0);
-    }
-  }
+.containerTable {
+  max-height: 500px;
+  overflow-y: auto;
 }
 
 .searchInput {
@@ -185,4 +97,22 @@ input {
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.975);
+  z-index: 999;
+}
+
+.modalWrapper {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1000;
+  transform: translate(-50%, -50%);
 }

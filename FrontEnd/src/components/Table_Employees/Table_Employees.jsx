@@ -1,4 +1,6 @@
 import React, {useContext, useEffect, useState, useRef} from 'react';
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css';
 import axios from 'axios';
 import moment from 'moment';
 import styles from './styles.module.scss';
@@ -101,7 +103,9 @@ function Table_Employees() {
             <button className={btn_import} onClick={() => fileInputRef.current.click()}>
               Nhập từ Excel
             </button>
-            <button className={btn_export} onClick={() => exportEmployeesToExcel(employees)}>xuất excel</button>
+            <button className={btn_export} onClick={() => exportEmployeesToExcel(employees)}>
+              xuất excel
+            </button>
           </div>
         </div>
 
@@ -161,13 +165,16 @@ function Table_Employees() {
             {filteredEmployees.map((emp) => (
               <tr key={emp.EmployeeID}>
                 <td className={groupEmployee}>
-                  <img src={emp.Img_url} alt="" className={tbImg} />
-
-                  <div className={infor}>
-                    <span className={nameBold}>{emp.FullName}</span>
-                    <div>{emp.Email}</div>
-                    <div>ID: {emp.EmployeeID}</div>
-                  </div>
+                  <Tippy content={<img src={emp.Img_url} alt={`Ảnh nhân viên ${emp.FullName}`} style={{width: '200px', height: '200px', objectFit: 'cover', borderRadius: '8px'}} />} placement="right" animation="scale" theme="light" interactive={true} delay={[200, 0]}>
+                    <div className={groupEmployee}>
+                      <img src={emp.Img_url} alt="" className={tbImg} />
+                      <div className={infor}>
+                        <span className={nameBold}>{emp.FullName}</span>
+                        <div>{emp.Email}</div>
+                        <div>ID: {emp.EmployeeID}</div>
+                      </div>
+                    </div>
+                  </Tippy>
                 </td>
                 <td>{emp.PhoneNumber}</td>
                 <td>{moment(emp.HireDate).format('DD/MM/YYYY')}</td>

@@ -10,12 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tippyjs/react": "^4.2.6",
     "axios": "^1.9.0",
     "bootstrap": "^5.3.5",
     "chartjs-plugin-datalabels": "^2.2.0",
+    "face-api.js": "^0.22.2",
     "file-saver": "^2.0.5",
     "lottie-react": "^2.4.1",
     "moment": "^2.30.1",
+    "motion": "^12.12.2",
     "multer": "^1.4.5-lts.2",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",

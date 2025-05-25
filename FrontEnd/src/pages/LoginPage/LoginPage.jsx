@@ -1,9 +1,11 @@
 import Button from '../../components/Button/Button';
 import styles from './styles.module.scss';
-import {useContext, useState} from 'react';
+import {useContext, useState, useRef} from 'react';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
 import {ToastContext} from '../../Contexts/ToastProvider';
+import FaceLogin from '../../components/LoginFace/LoginFace';
+
 
 function LoginPage() {
   const {loginContainer, btnLogin, loginForm, title, subtitle, input, formGroup, label, forgotPassword, loginInfo, description} = styles;
@@ -11,12 +13,12 @@ function LoginPage() {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-
-  // Phần cho quên mật khẩu
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [step, setStep] = useState(1); // 1: gửi mã, 2: nhập mã + mk mới
+  const [step, setStep] = useState(1);
+
+  const [showFaceLogin, setShowFaceLogin] = useState(false);
 
   const navigate = useNavigate();
   const {toast} = useContext(ToastContext);
@@ -78,65 +80,85 @@ function LoginPage() {
     }
   };
 
+  const onFaceLoginSuccess = () => {
+    toast.success('Đăng nhập bằng khuôn mặt thành công!');
+    navigate('/dashboardadmin');
+  };
+
   return (
     <div className={loginContainer}>
       <div className={loginForm}>
         <h1 className={title}>Hệ thống Quản lý Nhân sự</h1>
-        <p className={subtitle}>{isForgotPassword ? (step === 1 ? 'Nhập email để nhận mã xác nhận' : 'Nhập mã xác nhận và mật khẩu mới') : 'Đăng nhập vào tài khoản'}</p>
 
-        <form onSubmit={isForgotPassword ? (step === 1 ? handleSendCode : handleResetPassword) : handleLogin}>
-          {isForgotPassword ? (
-            step === 1 ? (
-              <div className={formGroup}>
-                <label className={label}>Email</label>
-                <input type="email" placeholder="Email" className={input} value={email} onChange={(e) => setEmail(e.target.value)} required />
-              </div>
-            ) : (
-              <>
-                <div className={formGroup}>
-                  <label className={label}>Mã xác nhận</label>
-                  <input type="text" placeholder="Mã xác nhận" className={input} value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)} required />
-                </div>
-                <div className={formGroup}>
-                  <label className={label}>Mật khẩu mới</label>
-                  <input type="password" placeholder="Mật khẩu mới" className={input} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-                </div>
-              </>
-            )
-          ) : (
-            <>
-              <div className={formGroup}>
-                <label htmlFor="userName" className={label}>
-                  Tên đăng nhập
-                </label>
-                <input type="text" id="userName" placeholder="Tên đăng nhập" className={input} value={userName} onChange={(e) => setUserName(e.target.value)} required />
-              </div>
-              <div className={formGroup}>
-                <label htmlFor="password" className={label}>
-                  Mật khẩu
-                </label>
-                <input type="password" id="password" placeholder="Mật khẩu" className={input} value={password} onChange={(e) => setPassword(e.target.value)} required />
-              </div>
-            </>
-          )}
+        {!showFaceLogin && (
+          <>
+            <p className={subtitle}>{isForgotPassword ? (step === 1 ? 'Nhập email để nhận mã xác nhận' : 'Nhập mã xác nhận và mật khẩu mới') : 'Đăng nhập vào tài khoản'}</p>
 
-          <button
-            type="button"
-            className={forgotPassword}
-            onClick={() => {
-              setIsForgotPassword(!isForgotPassword);
-              setStep(1);
-              setEmail('');
-              setVerificationCode('');
-              setNewPassword('');
-            }}
-          >
-            {isForgotPassword ? 'Quay lại đăng nhập' : 'Quên mật khẩu?'}
-          </button>
+            <form onSubmit={isForgotPassword ? (step === 1 ? handleSendCode : handleResetPassword) : handleLogin}>
+              {isForgotPassword ? (
+                step === 1 ? (
+                  <div className={formGroup}>
+                    <label className={label}>Email</label>
+                    <input type="email" placeholder="Email" className={input} value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  </div>
+                ) : (
+                  <>
+                    <div className={formGroup}>
+                      <label className={label}>Mã xác nhận</label>
+                      <input type="text" placeholder="Mã xác nhận" className={input} value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)} required />
+                    </div>
+                    <div className={formGroup}>
+                      <label className={label}>Mật khẩu mới</label>
+                      <input type="password" placeholder="Mật khẩu mới" className={input} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+                    </div>
+                  </>
+                )
+              ) : (
+                <>
+                  <div className={formGroup}>
+                    <label htmlFor="userName" className={label}>
+                      Tên đăng nhập
+                    </label>
+                    <input type="text" id="userName" placeholder="Tên đăng nhập" className={input} value={userName} onChange={(e) => setUserName(e.target.value)} required />
+                  </div>
+                  <div className={formGroup}>
+                    <label htmlFor="password" className={label}>
+                      Mật khẩu
+                    </label>
+                    <input type="password" id="password" placeholder="Mật khẩu" className={input} value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  </div>
+                </>
+              )}
 
-          <Button name={isForgotPassword ? (step === 1 ? 'Gửi mã' : 'Xác nhận đổi mật khẩu') : 'Đăng nhập'} className={btnLogin} type="submit" />
-        </form>
+              <button
+                type="button"
+                className={forgotPassword}
+                onClick={() => {
+                  setIsForgotPassword(!isForgotPassword);
+                  setStep(1);
+                  setEmail('');
+                  setVerificationCode('');
+                  setNewPassword('');
+                }}
+              >
+                {isForgotPassword ? 'Quay lại đăng nhập' : 'Quên mật khẩu?'}
+              </button>
+
+              <Button name={isForgotPassword ? (step === 1 ? 'Gửi mã' : 'Xác nhận đổi mật khẩu') : 'Đăng nhập'} className={btnLogin} type="submit" />
+
+              {!isForgotPassword && <Button name="Đăng nhập bằng khuôn mặt" className={btnLogin} type="button" onClick={() => setShowFaceLogin(true)} />}
+            </form>
+          </>
+        )}
+
+        {showFaceLogin && (
+          <>
+            <FaceLogin  onLoginSuccess={onFaceLoginSuccess} toast={toast} navigate={navigate}/>
+            <Button name="Quay lại đăng nhập" className={btnLogin} type="button" onClick={() => setShowFaceLogin(false)} />
+          </>
+        )}
       </div>
+
       <div className={loginInfo}>
         <h1 className={title}>Hệ thống Quản lý Nhân sự</h1>
         <p className={description}>Tối ưu hóa quy trình nhân sự, hệ thống quản lý toàn diện</p>

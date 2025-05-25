@@ -19,9 +19,10 @@
 }
 
 .content {
-  width: 900px;
+  max-width: 1400px;
   max-height: 740px;
   overflow-y: auto;
+  overflow-x: hidden;
   margin-left: 300px;
   padding: 10px;
   flex: 1;
@@ -31,7 +32,6 @@
 .startCard {
   display: flex;
   margin-top: 20px;
-  justify-content: space-between;
 }
 
 .barChart {
@@ -51,15 +51,15 @@
 .bottomSection{
   display: flex;
   justify-content: space-between;
+
 }
 
 .pieChart{
+  margin-right: 10px;
   border-radius: 10px;
-  width: 690px;
+  width: 670px;
   display: flex;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  background-color: ffff;
-  
 }
 
 .employees,

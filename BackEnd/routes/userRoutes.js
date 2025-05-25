@@ -56,5 +56,7 @@ router.post("/import", userController.importExcel)
 router.get("/getCountStatus", userController.getCountStatus)
 router.get("/getCountGender", userController.getCountGender)
 router.post("/sendVerificationCode", userController.sendVerificationCode);
-
+router.get("/getTimekeepingByEmployee/:EmployeeID", userController.getTimekeepingByEmployee);
+router.post("/toggleAccountStatus", userController.toggleAccountStatus)
+router.post("/loginByFace", userController.loginFace)
 module.exports = router;

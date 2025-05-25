@@ -1,6 +1,6 @@
 const mysqlConnection = require("../config/mySql.js");
 const connectSQL = require("../config/sqlServer.js");
-const transporter = require("../config/email.js"); 
+const transporter = require("../config/email.js");
 
 const sql = require("mssql");
 const bcrypt = require("bcrypt");
@@ -9,7 +9,7 @@ exports.login = (req, res) => {
   const { username, password } = req.body;
 
   const query = `
-    SELECT AccountID, Username, RoleID, EmployeeID, Password FROM account WHERE Username = ?
+    SELECT AccountID, Username, RoleID, EmployeeID, Password, Status FROM account WHERE Username = ?
   `;
 
   mysqlConnection.query(query, [username], async (err, results) => {
@@ -20,7 +20,11 @@ exports.login = (req, res) => {
       return res.status(404).json({ message: "Tài khoản không tồn tại." });
 
     const user = results[0];
-
+    if (user.Status !== "active") {
+      return res
+        .status(403)
+        .json({ message: "Tài khoản bị vô hiệu hoá lên công ty để mở lại!!" });
+    }
     try {
       const isMatch = await bcrypt.compare(password, user.Password);
 
@@ -42,25 +46,100 @@ exports.login = (req, res) => {
   });
 };
 
+const euclideanDistance = (a, b) => {
+  return Math.sqrt(a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0));
+};
+
+exports.loginFace = (req, res) => {
+  
+  const { faceDescriptor } = req.body;
+  if (!faceDescriptor || !Array.isArray(faceDescriptor)) {
+    return res
+      .status(400)
+      .json({ message: "Thiếu hoặc sai định dạng descriptor" });
+  }
+
+  const query = `SELECT * FROM account WHERE Face_Descriptor IS NOT NULL`;
+
+  mysqlConnection.query(query, (err, results) => {
+    if (err) {
+      console.error("Lỗi truy vấn: ", err);
+      return res.status(500).json({ message: "Lỗi máy chủ" });
+    }
+
+    let matchedUser = null;
+    let minDistance = Infinity;
+
+    results.forEach((user) => {
+      if (!user.Face_Descriptor) return; 
+
+      let dbDescriptor;
+      try {
+        dbDescriptor = JSON.parse(user.Face_Descriptor);
+      } catch (e) {
+        console.warn(`Lỗi parse FaceDescriptor cho user ${user.Username}`);
+        return;
+      }
+
+      if (
+        !Array.isArray(dbDescriptor) ||
+        dbDescriptor.length !== faceDescriptor.length
+      ) {
+        return;
+      }
+
+      const distance = euclideanDistance(faceDescriptor, dbDescriptor);
+
+      if (distance < 0.6 && distance < minDistance) {
+        matchedUser = user;
+        minDistance = distance;
+      }
+    });
+
+    if (matchedUser) {
+      if (matchedUser.Status !== "active") {
+        return res
+          .status(403)
+          .json({ message: "Tài khoản bị vô hiệu hóa, hãy liên hệ công ty!" });
+      }
+
+      return res.status(200).json({
+        message: "Đăng nhập bằng khuôn mặt thành công!",
+        id: matchedUser.EmployeeID,
+        role: matchedUser.RoleID,
+        username: matchedUser.Username,
+      });
+    } else {
+      return res
+        .status(401)
+        .json({ message: "Không nhận diện được khuôn mặt" });
+    }
+  });
+};
+
 exports.resetPassword = async (req, res) => {
   const { email, code, newPassword } = req.body;
 
   if (!email || !code || !newPassword) {
-    return res.status(400).json({ message: 'Vui lòng nhập đầy đủ email, mã xác nhận và mật khẩu mới.' });
+    return res.status(400).json({
+      message: "Vui lòng nhập đầy đủ email, mã xác nhận và mật khẩu mới.",
+    });
   }
 
   try {
     const record = verificationCodes[email];
     if (!record) {
-      return res.status(400).json({ message: 'Chưa gửi mã xác nhận hoặc mã không tồn tại.' });
+      return res
+        .status(400)
+        .json({ message: "Chưa gửi mã xác nhận hoặc mã không tồn tại." });
     }
 
     if (record.code !== code) {
-      return res.status(400).json({ message: 'Mã xác nhận không đúng.' });
+      return res.status(400).json({ message: "Mã xác nhận không đúng." });
     }
 
     if (Date.now() > record.expires) {
-      return res.status(400).json({ message: 'Mã xác nhận đã hết hạn.' });
+      return res.status(400).json({ message: "Mã xác nhận đã hết hạn." });
     }
 
     const pool = await connectSQL();
@@ -71,7 +150,9 @@ exports.resetPassword = async (req, res) => {
       .query("SELECT EmployeeID FROM Employees WHERE Email = @email");
 
     if (result.recordset.length === 0) {
-      return res.status(404).json({ message: "Email không tồn tại trong hệ thống nhân sự." });
+      return res
+        .status(404)
+        .json({ message: "Email không tồn tại trong hệ thống nhân sự." });
     }
 
     const userId = result.recordset[0].EmployeeID;
@@ -88,7 +169,9 @@ exports.resetPassword = async (req, res) => {
         }
 
         if (mysqlResult.affectedRows === 0) {
-          return res.status(404).json({ message: "Không tìm thấy tài khoản trong hệ thống." });
+          return res
+            .status(404)
+            .json({ message: "Không tìm thấy tài khoản trong hệ thống." });
         }
 
         delete verificationCodes[email];
@@ -96,7 +179,6 @@ exports.resetPassword = async (req, res) => {
         res.json({ message: "Đặt lại mật khẩu thành công." });
       }
     );
-
   } catch (error) {
     console.error("🔥 Lỗi xử lý reset password:", error);
     res.status(500).json({ message: "Đã xảy ra lỗi máy chủ." });
@@ -997,6 +1079,7 @@ exports.getaccount = async (req, res) => {
         e.FullName, 
         a.UserName,
         a.Password,
+        a.Status,
         r.RoleName
       FROM account a
       JOIN employees e ON a.EmployeeID = e.EmployeeID
@@ -1017,11 +1100,46 @@ exports.getaccount = async (req, res) => {
   }
 };
 
+exports.toggleAccountStatus = (req, res) => {
+  const { UserName } = req.body;
+
+  if (!UserName) {
+    return res.status(400).json({ message: "Thiếu tên đăng nhập" });
+  }
+
+  const selectQuery = "SELECT Status FROM Account WHERE UserName = ?";
+  mysqlConnection.query(selectQuery, [UserName], (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: "Lỗi máy chủ" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy tài khoản" });
+    }
+
+    const currentStatus = results[0].Status;
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+
+    const updateQuery = "UPDATE Account SET Status = ? WHERE UserName = ?";
+    mysqlConnection.query(updateQuery, [newStatus, UserName], (err2) => {
+      if (err2) {
+        return res.status(500).json({ message: "Lỗi máy chủ khi cập nhật" });
+      }
+
+      return res
+        .status(200)
+        .json({ message: "Cập nhật trạng thái thành công", newStatus });
+    });
+  });
+};
+
 exports.addAccount = async (req, res) => {
-  const { EmployeeID, RoleID, UserName, Password } = req.body;
+  const { EmployeeID, RoleID, UserName, Password, FaceDescriptor } = req.body;
+
   if (!EmployeeID || !RoleID || !UserName || !Password) {
     return res.status(400).json({ message: "Thiếu thông tin!" });
   }
+
   const checkQuery = `SELECT * FROM account WHERE EmployeeID = ?`;
   mysqlConnection.query(checkQuery, [EmployeeID], async (err, result) => {
     if (err) {
@@ -1036,16 +1154,23 @@ exports.addAccount = async (req, res) => {
     try {
       const hashedPassword = await bcrypt.hash(Password, 10);
 
-      const insertQuery = `INSERT INTO account (EmployeeID, RoleID, UserName, Password) VALUES (?,?,?,?)`;
+      const insertQuery = `
+        INSERT INTO account (EmployeeID, RoleID, UserName, Password, Status, Face_Descriptor)
+        VALUES (?, ?, ?, ?, 'active', ?)
+      `;
+
+      // Chuyển FaceDescriptor thành mảng rồi stringify, nếu có
+      const descriptorString = FaceDescriptor
+        ? JSON.stringify(Object.values(FaceDescriptor))
+        : null;
+
       mysqlConnection.query(
         insertQuery,
-        [EmployeeID, RoleID, UserName, hashedPassword],
+        [EmployeeID, RoleID, UserName, hashedPassword, descriptorString],
         (err, result) => {
           if (err) {
             console.error("Lỗi thêm tài khoản: ", err);
-            return res
-              .status(500)
-              .json({ message: "Không thể thêm tài khoản" });
+            return res.status(500).json({ message: "Không thể thêm tài khoản" });
           }
           return res.status(200).json({ message: "Tạo tài khoản thành công" });
         }
@@ -1056,6 +1181,7 @@ exports.addAccount = async (req, res) => {
     }
   });
 };
+
 
 exports.addTimekeeping = (req, res) => {
   const { employeeID, type, date } = req.body;
@@ -1132,6 +1258,19 @@ exports.addTimekeeping = (req, res) => {
       );
     }
   );
+};
+
+exports.getTimekeepingByEmployee = (req, res) => {
+  const employeeID = req.params.EmployeeID;
+  const query = "SELECT * FROM attendance WHERE EmployeeID = ?";
+
+  mysqlConnection.query(query, [employeeID], (err, results) => {
+    if (err) {
+      console.error("Lỗi truy vấn:", err);
+      return res.status(500).json({ message: "Lỗi server" });
+    }
+    res.json(results);
+  });
 };
 
 exports.getAttendanceByEmployeeID = (req, res) => {
@@ -1312,7 +1451,7 @@ exports.sendVerificationCode = async (req, res) => {
   }
 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expires = Date.now() + 5 * 60 * 1000; 
+  const expires = Date.now() + 5 * 60 * 1000;
 
   verificationCodes[email] = { code, expires };
 

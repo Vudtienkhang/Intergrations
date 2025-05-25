@@ -7,6 +7,8 @@
   width: 850px; 
   height: 300px;
   overflow-y: auto;
+  scrollbar-width: none;      
+  -ms-overflow-style: none;
 }
 
 .header {
