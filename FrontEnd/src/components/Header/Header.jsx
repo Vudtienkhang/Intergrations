@@ -12,7 +12,6 @@ function Header() {
     fetch('http://localhost:3000/api/notifications')
       .then((res) => res.json())
       .then((data) => {
-        console.log('Dữ liệu thông báo:', data);
         setNotifications(data.notifications);
       })
       .catch((err) => console.error('Lỗi khi lấy thông báo:', err));

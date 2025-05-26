@@ -24,10 +24,7 @@ router.post("/import", userController.importExcel); // Import từ Excel
 router.get("/departments", userController.getAllDepartments); // Lấy danh sách phòng ban (MySQL)
 router.get("/getDepartmentSql", userController.getAllDepartmentsSql); // Lấy phòng ban (SQL Server)
 router.get("/getDepartment/:DepartmentID", userController.getDepartments); // Lấy phòng ban theo ID
-router.delete(
-  "/deletedDepartments/:DepartmentID",
-  userController.deleteDepartment
-); // Xóa phòng ban
+router.delete("/deletedDepartments/:DepartmentID",userController.deleteDepartment); // Xóa phòng ban
 
 // ==================== POSITION ====================
 router.get("/positions", userController.getAllPositions); // Lấy danh sách chức vụ (MySQL)
@@ -64,7 +61,7 @@ router.get("/gettotalDepartment", userController.gettotalDepartment); // Tổng 
 router.get("/gettotalSalary", userController.gettotalSalary); // Tổng lương
 router.get("/getCountStatus", userController.getCountStatus); // Thống kê trạng thái nhân viên
 router.get("/getCountGender", userController.getCountGender); // Thống kê giới tính nhân viên
-router.get("/totalPosition", userController.totalPosition);//Thống kê sô lươngj nhân viên tuỳ chức vụ
+router.get("/totalPosition", userController.totalPosition); //Thống kê sô lươngj nhân viên tuỳ chức vụ
 
 // ==================== KHÁC ====================
 router.get("/notifications", userController.getNotifications); // Lấy thông báo
