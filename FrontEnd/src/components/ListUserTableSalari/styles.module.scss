@@ -61,7 +61,7 @@
   border: 1px solid #ccc;
 }
 
-.btn {
+.btn, .btnLuu {
   background-color: rgb(41, 136, 41);
   color: #fff;
   padding: 8px 12px;
@@ -71,6 +71,11 @@
   transition: background 0.2s;
   margin: 0;
 }
+
+.btnLuu{
+  width: 100% !important;
+}
+
 
 .btn:hover {
   background-color: rgb(34, 112, 34);
@@ -91,7 +96,7 @@
 }
 
 .salaryForm {
-  width: 80%;
+  width: 50%;
   margin-top: 20px;
   margin-left: 30px;
   border: 1px solid #ccc;
@@ -99,9 +104,9 @@
   border-radius: 8px;
   background-color: #fff;
   position: absolute;
-  top: 50%;  
+  top: 50%;
   left: 55%;
-  transform: translate(-50%, -50%);  
+  transform: translate(-50%, -50%);
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -118,7 +123,7 @@
 }
 
 .salaryForm select,
-.salaryForm input[type="number"] {
+.salaryForm input[type='number'] {
   width: 100%;
   padding: 8px 10px;
   margin-top: 5px;
@@ -134,10 +139,37 @@
 }
 
 .tableWrapper {
-  max-height: 300px; 
-  min-height: 300px; 
+  max-height: 300px;
+  min-height: 300px;
   overflow-y: auto;
   border: 1px solid #ccc;
   margin-top: 0;
 }
 
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+}
+
+.box_btn {
+  display: flex;
+}
+
+.closeIcon {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #000000;
+
+  &:hover {
+    color: #333;
+  }
+}

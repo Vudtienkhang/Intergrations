@@ -4,7 +4,7 @@ import styles from './styles.module.scss';
 import Button from '../Button/Button';
 import {IoMdClose} from 'react-icons/io';
 function AddUser({onClose}) {
-  const {add_user_container,input_infor ,iconClose, add_user_left, add_user_title, add_user_form, add_user_label, add_user_input, btn_submit} = styles;
+  const {add_user_container, input_infor, iconClose, add_user_left, add_user_title, add_user_form, add_user_label, add_user_input, btn_submit} = styles;
   const {toast} = useContext(ToastContext);
   const [userData, setUserData] = useState({
     HoTen: '',
@@ -16,6 +16,7 @@ function AddUser({onClose}) {
     ImgUrl: '',
     ChucVu: '',
     PhongBan: '',
+    TrangThai: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,7 +71,7 @@ function AddUser({onClose}) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const requiredFields = ['HoTen', 'NgaySinh', 'GioiTinh', 'SoDienThoai', 'Email', 'NgayVaoLam', 'ChucVu', 'PhongBan'];
+    const requiredFields = ['HoTen', 'NgaySinh', 'GioiTinh', 'SoDienThoai', 'Email', 'NgayVaoLam', 'ChucVu', 'PhongBan', 'TrangThai'];
     for (let field of requiredFields) {
       if (!userData[field]) {
         toast.error(`Vui lòng điền thông tin ${field}`);
@@ -96,6 +97,7 @@ function AddUser({onClose}) {
       Img_url: userData.ImgUrl,
       PositionID: chucVuSelected.PositionID,
       DepartmentID: phongBanSelected.DepartmentID,
+      Status: userData.TrangThai,
     };
 
     setIsSubmitting(true);
@@ -122,6 +124,7 @@ function AddUser({onClose}) {
           ImgUrl: '',
           ChucVu: '',
           PhongBan: '',
+          TrangThai: '',
         });
         if (response.ok) {
           onClose();
@@ -199,13 +202,22 @@ function AddUser({onClose}) {
                 ))}
               </select>
             </div>
+            <div>
+              <label>Trạng thái:</label>
+              <select name="TrangThai" value={userData.TrangThai} onChange={handleChange}>
+                <option value="">--Chọn trạng thái--</option>
+                <option value="Đang làm">Đang làm</option>
+                <option value="Nghỉ phép">Nghỉ phép</option>
+                <option value="Nghỉ việc">Nghỉ việc</option>
+              </select>
+            </div>
           </div>
           <div className="form_group">
             <label className={add_user_label}>Ảnh đại diện:</label>
             <input className={add_user_input} type="file" name="ImgUrl" onChange={handleFileChange} />
             {userData.ImgUrl && <img src={userData.ImgUrl} alt="Ảnh đại diện" style={{width: 100, height: 100, objectFit: 'cover'}} />}
           </div>
-          <Button name={isSubmitting ? 'Đang thêm...' : 'THÊM'} disabled={isSubmitting} className={btn_submit}/>
+          <Button name={isSubmitting ? 'Đang thêm...' : 'THÊM'} disabled={isSubmitting} className={btn_submit} />
         </form>
       </div>
     </div>

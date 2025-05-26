@@ -3,8 +3,9 @@ import styles from './styles.module.scss';
 import Button from '../Button/Button';
 import {ToastContext} from '../../Contexts/ToastProvider';
 import axios from 'axios';
+import {IoCloseOutline} from 'react-icons/io5';
 function ListUserTableSalari() {
-  const {container, message, table, tableHead, controls, searchInput, btn, btn_delete, salaryForm} = styles;
+  const {container, message, table, tableHead, controls, searchInput, btn, btnLuu,btn_delete, salaryForm, box_btn, overlay, closeIcon} = styles;
 
   const [data, setData] = useState([]);
   const {toast} = useContext(ToastContext);
@@ -318,60 +319,72 @@ function ListUserTableSalari() {
       </div>
 
       {editingSalaryID && (
-        <div className={salaryForm}>
-          <h3>Cập nhật lương</h3>
-          <label>
-            Lương cơ bản:
-            <input type="number" value={editFormData.BaseSalary} onChange={(e) => setEditFormData({...editFormData, BaseSalary: e.target.value})} />
-          </label>
-          <br />
-          <label>
-            Thưởng:
-            <input type="number" value={editFormData.Bonus} onChange={(e) => setEditFormData({...editFormData, Bonus: e.target.value})} />
-          </label>
-          <br />
-          <label>
-            Khấu trừ:
-            <input type="number" value={editFormData.Deductions} onChange={(e) => setEditFormData({...editFormData, Deductions: e.target.value})} />
-          </label>
-          <br />
-          <Button name="Cập nhật" onClick={() => handleUpdateSalary(editingSalaryID)} className={btn} />
-          <Button name="Hủy" onClick={() => setEditingSalaryID(null)} className={btn_delete} />
+        <div className={overlay}>
+          <div className={salaryForm}>
+            <div className={closeIcon} onClick={() => setEditingSalaryID(null)}>
+              <IoCloseOutline size={'24px'} />
+            </div>
+            <h3>Cập nhật lương</h3>
+            <label>
+              Lương cơ bản:
+              <input type="number" value={editFormData.BaseSalary} onChange={(e) => setEditFormData({...editFormData, BaseSalary: e.target.value})} />
+            </label>
+            <br />
+            <label>
+              Thưởng:
+              <input type="number" value={editFormData.Bonus} onChange={(e) => setEditFormData({...editFormData, Bonus: e.target.value})} />
+            </label>
+            <br />
+            <label>
+              Khấu trừ:
+              <input type="number" value={editFormData.Deductions} onChange={(e) => setEditFormData({...editFormData, Deductions: e.target.value})} />
+            </label>
+            <br />
+            <div className={box_btn}>
+              <Button name="Cập nhật" onClick={() => handleUpdateSalary(editingSalaryID)} className={btnLuu} />
+            </div>
+          </div>
         </div>
       )}
 
       {showForm && (
-        <div className={salaryForm}>
-          <h3>Thêm lương mới</h3>
-          <label>
-            Nhân viên:
-            <select value={formData.EmployeeID} onChange={(e) => setFormData({...formData, EmployeeID: e.target.value})}>
-              <option value="">-- Chọn nhân viên --</option>
-              {employees.map((emp) => (
-                <option key={emp.EmployeeID} value={emp.EmployeeID}>
-                  {emp.FullName}
-                </option>
-              ))}
-            </select>
-          </label>
-          <br />
-          <label>
-            Lương cơ bản:
-            <input type="number" value={formData.BaseSalary} onChange={(e) => setFormData({...formData, BaseSalary: e.target.value})} />
-          </label>
-          <br />
-          <label>
-            Thưởng:
-            <input type="number" value={formData.Bonus} onChange={(e) => setFormData({...formData, Bonus: e.target.value})} />
-          </label>
-          <br />
-          <label>
-            Khấu trừ:
-            <input type="number" value={formData.Deductions} onChange={(e) => setFormData({...formData, Deductions: e.target.value})} />
-          </label>
-          <br />
-          <Button name="Lưu" onClick={handleAddSalary} className={btn} />
-          <Button name="Hủy" onClick={() => setShowForm(false)} className={btn_delete} />
+        <div className={overlay}>
+          <div className={salaryForm}>
+            <div className={closeIcon} onClick={() => setShowForm(false)}>
+              <IoCloseOutline size={'24px'} />
+            </div>
+            <h3>Thêm lương mới</h3>
+            <label>
+              Nhân viên:
+              <select value={formData.EmployeeID} onChange={(e) => setFormData({...formData, EmployeeID: e.target.value})}>
+                <option value="">-- Chọn nhân viên --</option>
+                {employees.map((emp) => (
+                  <option key={emp.EmployeeID} value={emp.EmployeeID}>
+                    {emp.FullName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <br />
+            <label>
+              Lương cơ bản:
+              <input type="number" value={formData.BaseSalary} onChange={(e) => setFormData({...formData, BaseSalary: e.target.value})} />
+            </label>
+            <br />
+            <label>
+              Thưởng:
+              <input type="number" value={formData.Bonus} onChange={(e) => setFormData({...formData, Bonus: e.target.value})} />
+            </label>
+            <br />
+            <label>
+              Khấu trừ:
+              <input type="number" value={formData.Deductions} onChange={(e) => setFormData({...formData, Deductions: e.target.value})} />
+            </label>
+            <br />
+            <div className={box_btn}>
+              <Button name="Lưu" onClick={handleAddSalary} className={btnLuu} />
+            </div>
+          </div>
         </div>
       )}
     </div>

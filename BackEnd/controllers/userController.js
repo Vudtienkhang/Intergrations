@@ -260,7 +260,7 @@ exports.addEmployee = async (req, res) => {
     const pool = await connectSQL();
 
     let imgUrl = newEmployee.Img_url || null;
-
+    let status = newEmployee.Status || "Đang làm";
     const result = await pool
       .request()
       .input("FullName", sql.NVarChar, newEmployee.FullName)
@@ -271,31 +271,31 @@ exports.addEmployee = async (req, res) => {
       .input("HireDate", sql.Date, new Date(newEmployee.HireDate))
       .input("Img_url", sql.VarChar, imgUrl)
       .input("DepartmentID", sql.Int, newEmployee.DepartmentID)
+      .input("Status", sql.NVarChar, status)
       .input("PositionID", sql.Int, newEmployee.PositionID).query(`
         INSERT INTO Employees (
           FullName, Gender, DateOfBirth, PhoneNumber, Email,
-          HireDate, Img_url, DepartmentID, PositionID
+          HireDate, Img_url, DepartmentID, PositionID, Status
         )
         OUTPUT INSERTED.EmployeeID
         VALUES (
           @FullName, @Gender, @DateOfBirth, @PhoneNumber, @Email,
-          @HireDate, @Img_url, @DepartmentID, @PositionID
+          @HireDate, @Img_url, @DepartmentID, @PositionID, @Status
         )
       `);
 
     const employeeID = result.recordset[0].EmployeeID;
-    console.log("Đã thêm vào SQL Server với ID:", employeeID);
-
     const mysqlResult = await mysqlConnection.execute(
       `
-      INSERT INTO Employees (EmployeeID, FullName, DepartmentID, PositionID)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO Employees (EmployeeID, FullName, DepartmentID, PositionID, Status)
+      VALUES (?, ?, ?, ?, ?)
     `,
       [
         employeeID,
         newEmployee.FullName,
         newEmployee.DepartmentID,
         newEmployee.PositionID,
+        status,
       ]
     );
     res.status(201).json({
@@ -523,11 +523,12 @@ exports.updateEmployee = async (req, res) => {
       `);
 
     const mysqlResult = await mysqlConnection.execute(
-      `UPDATE Employees SET FullName = ?, DepartmentID = ?, PositionID = ? WHERE EmployeeID = ?`,
+      `UPDATE Employees SET FullName = ?, DepartmentID = ?, PositionID = ?, Status=? WHERE EmployeeID = ?`,
       [
         updatedEmployee.FullName,
         updatedEmployee.DepartmentID,
         updatedEmployee.PositionID,
+        updatedEmployee.Status,
         employeeID,
       ]
     );
@@ -807,17 +808,32 @@ exports.deletePosition = async (req, res) => {
     const poolSQL = await connectSQL();
     const mysqlPool = mysqlConnection;
 
+    const hasEmployees = await new Promise((resolve, reject) => {
+      mysqlPool.query(
+        `SELECT COUNT(*) AS count FROM employees WHERE PositionID = ?`,
+        [PositionID],
+        (err, results) => {
+          if (err) return reject(err);
+          resolve(results[0].count > 0);
+        }
+      );
+    });
+
+    if (hasEmployees) {
+      return res.status(400).json({
+        error: "Không thể xoá vì còn nhân viên đang sử dụng chức vụ này.",
+      });
+    }
+
     const transaction = new sql.Transaction(poolSQL);
     await transaction.begin();
 
     try {
-      // Xoá trong SQL Server
       await transaction
         .request()
         .input("PositionID", sql.Int, PositionID)
         .query(`DELETE FROM Positions WHERE PositionID = @PositionID`);
 
-      // Xoá trong MySQL
       await new Promise((resolve, reject) => {
         mysqlPool.query(
           `DELETE FROM positions WHERE PositionID = ?`,
@@ -906,7 +922,7 @@ exports.getDepartments = async (req, res) => {
       .request()
       .input("departmentId", sql.Int, parseInt(departmentID.trim()))
       .query(
-        `SELECT e.EmployeeID, e.FullName, e.Email FROM Departments d JOIN Employees e ON d.DepartmentID = e.DepartmentID WHERE d.DepartmentID = @departmentID `
+        `SELECT d.DepartmentName, e.EmployeeID, e.FullName,e.Img_url, e.PhoneNumber ,e.Email FROM Departments d JOIN Employees e ON d.DepartmentID = e.DepartmentID WHERE d.DepartmentID = @departmentID `
       );
     res.json(result.recordset);
   } catch (err) {
@@ -924,6 +940,20 @@ exports.deleteDepartment = async (req, res) => {
   try {
     const poolSQLServer = await connectSQL();
     const mysqlPool = mysqlConnection;
+
+    const checkResult = await poolSQLServer
+      .request()
+      .input("DepartmentID", sql.Int, departmentID)
+      .query(
+        "SELECT COUNT(*) AS total FROM Employees WHERE DepartmentID = @DepartmentID"
+      );
+
+    const employeeCount = checkResult.recordset[0].total;
+    if (employeeCount > 0) {
+      return res
+        .status(400)
+        .json({ error: "Không thể xoá phòng ban vì vẫn còn nhân viên." });
+    }
 
     const transaction = new sql.Transaction(poolSQLServer);
     await transaction.begin();
@@ -1050,14 +1080,14 @@ exports.getNotifications = async (req, res) => {
         return res.status(500).json({ error: "Lỗi MySQL" });
       }
       results.forEach((row) => {
-        if (row.TotalLeave > 2) {
+        if (row.TotalLeave > 3) {
           const employee = sqlResults.recordset.find(
             (emp) => emp.EmployeeID === row.EmployeeID
           );
           if (employee) {
             allNotifications.push({
               type: "Cảnh báo",
-              message: `${employee.FullName} đã nghỉ ${row.TotalLeave} ngày trong tháng này!`,
+              message: `${employee.FullName} đã nghỉ ${row.TotalLeave} ngày phép trong tháng này!`,
               date: new Date(),
             });
           }
@@ -1158,7 +1188,6 @@ exports.addAccount = async (req, res) => {
         VALUES (?, ?, ?, ?, 'active', ?)
       `;
 
-      // Chuyển FaceDescriptor thành mảng rồi stringify, nếu có
       const descriptorString = FaceDescriptor
         ? JSON.stringify(Object.values(FaceDescriptor))
         : null;
@@ -1344,7 +1373,7 @@ exports.importExcel = async (req, res) => {
 
     for (const emp of employees) {
       let imgUrl = emp.Img_url || null;
-
+      let status = emp.Status || "Đang làm";
       const deptResult = await pool
         .request()
         .input("DepartmentName", sql.NVarChar, emp.DepartmentName)
@@ -1379,7 +1408,7 @@ exports.importExcel = async (req, res) => {
         .input("Img_url", sql.VarChar, imgUrl)
         .input("DepartmentID", sql.Int, departmentID)
         .input("PositionID", sql.Int, positionID)
-        .input("Status", sql.NVarChar, emp.Status).query(`
+        .input("Status", sql.NVarChar, emp.status).query(`
           INSERT INTO Employees (
             FullName, Gender, DateOfBirth, PhoneNumber, Email,
             HireDate, Img_url, DepartmentID, PositionID, Status
@@ -1395,10 +1424,10 @@ exports.importExcel = async (req, res) => {
 
       await mysqlConnection.execute(
         `
-        INSERT INTO Employees (EmployeeID, FullName, DepartmentID, PositionID)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO Employees (EmployeeID, FullName, DepartmentID, PositionID, Status)
+        VALUES (?, ?, ?, ?, ?)
       `,
-        [employeeID, emp.FullName, departmentID, positionID]
+        [employeeID, emp.FullName, departmentID, positionID, status]
       );
     }
 
@@ -1553,4 +1582,22 @@ exports.sendPayroll = (req, res) => {
       }
     }
   );
+};
+
+exports.totalPosition = (req, res) => {
+  const query = `
+    SELECT p.PositionName, COUNT(e.EmployeeID) AS TotalEmployees
+    FROM positions p
+    LEFT JOIN employees e ON p.PositionID = e.PositionID
+    GROUP BY p.PositionName;
+  `;
+
+  mysqlConnection.query(query, (err, results) => {
+    if (err) {
+      console.error("Lỗi khi lấy tổng số nhân viên theo chức vụ:", err);
+      return res.status(500).json({ message: "Lỗi server" });
+    }
+
+    res.json(results);
+  });
 };

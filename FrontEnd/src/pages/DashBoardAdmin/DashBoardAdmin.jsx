@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useLocation, useParams} from 'react-router-dom';
+import {useLocation} from 'react-router-dom';
 import axios from 'axios';
 import Header from '../../components/Header/Header';
 import MenuService from '../../components/MenuService/MenuService';
@@ -21,6 +21,8 @@ import TableAttendance from '../../components/TableAttendance/TableAttendance';
 import PersonalAccount from '../../components/PersonalAccount/PersonalAccount';
 import StatusChart from '../../components/BarChart/StatusChart/StatusChart';
 import GenderChart from '../../components/BarChart/GenderChart/GenderChart';
+import DepartmentDetail from '../../components/DepartmentDetail/DepartmentDetail';
+import ListCardPosition from '../../components/ListCardPosition/ListCardPosition';
 
 function DashBoardAdmin() {
   const {header, menuService, content, startCard, barChart, wrapper, employees, department, topSection, bottomSection, pieChart} = styles;
@@ -28,9 +30,16 @@ function DashBoardAdmin() {
   const [totalDepartment, setTotalDepartment] = useState(0);
   const [totalSalary, setTotalSalary] = useState(0);
   const [currentMonth, setCurrentMonth] = useState('');
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState(null);
   const location = useLocation();
+  const handleViewDepartmentDetail = (id) => {
+    setSelectedDepartmentId(id);
+  };
+
+  const handleBackToList = () => {
+    setSelectedDepartmentId(null);
+  };
   const roleId = JSON.parse(localStorage.getItem('user'))?.role;
-  const {id} = useParams()
   useEffect(() => {
     axios
       .get('http://localhost:3000/api/gettotalEmployees')
@@ -110,7 +119,7 @@ function DashBoardAdmin() {
                   <MonthlySalaryChart />
                   <div className={pieChart}>
                     <StatusChart />
-                    <GenderChart/>
+                    <GenderChart />
                   </div>
                 </div>
               </div>
@@ -132,13 +141,14 @@ function DashBoardAdmin() {
           {activeMenu === 'Phòng ban' && (
             <div className={department}>
               <h1>Danh Sách Phòng Ban</h1>
-              <ListDepartment />
+              {selectedDepartmentId ? <DepartmentDetail id={selectedDepartmentId} onBack={handleBackToList} /> : <ListDepartment onViewDetail={handleViewDepartmentDetail} />}
             </div>
           )}
           {activeMenu === 'Chức danh' && (
             <div className={department}>
               <h1>Chức danh</h1>
               <ListPosition />
+              <ListCardPosition/>
             </div>
           )}
           {activeMenu === 'Tài khoản' && (

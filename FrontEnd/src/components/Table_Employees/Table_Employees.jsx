@@ -23,7 +23,7 @@ function Table_Employees() {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const fileInputRef = useRef(null);
   const [isCardView, setIsCardView] = useState(false);
-  const {functions, infor, toggle,header, table, table_dark, tbImg, groupEmployee, nameBold, modal_backdrop, btn_add, btn, statusWorking, statusQuit, statusLeave, container_table, btn_import, btn_export, container_btn} = styles;
+  const {functions, infor, toggle, header, table, table_dark, tbImg, groupEmployee, nameBold, modal_backdrop, btn_add, btn, statusWorking, statusQuit, statusLeave, container_table, btn_import, btn_export, container_btn} = styles;
 
   const {toast} = useContext(ToastContext);
   const getStatusClass = (status) => {

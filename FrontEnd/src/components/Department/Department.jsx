@@ -2,23 +2,31 @@ import styles from './styles.module.scss';
 import {FiUsers} from 'react-icons/fi';
 import {MdOutlineDeleteOutline} from 'react-icons/md';
 import axios from 'axios';
-import {useNavigate} from 'react-router-dom';
+import {useContext} from 'react';
+import {ToastContext} from '../../Contexts/ToastProvider';
 
-function Department({departmentId, departmentName, employeeCount, description, onDelete}) {
+function Department({departmentId, departmentName, employeeCount, description, onDelete, onViewDetail}) {
   const {department_card, department_header, department_icon, edit_icon, employee_count, descriptions, view_details, department_header__one} = styles;
-  const navigate = useNavigate();
+  const {toast} = useContext(ToastContext);
   const handleViewDetail = () => {
-    navigate(`/dashboard/departments/${departmentId}`);
+    if (onViewDetail) {
+      onViewDetail(departmentId);
+    }
   };
   const handleDeleteDepartment = async () => {
     if (window.confirm('Bạn có chắc chắn muốn xoá phòng ban này?')) {
       try {
         await axios.delete(`http://localhost:3000/api/deletedDepartments/${departmentId}`);
-        alert('Đã xoá phòng ban!');
+        toast.success('Xoá Phòng ban thành công!');
         if (onDelete) onDelete(departmentId);
       } catch (error) {
         console.error('Lỗi khi xoá phòng ban:', error);
-        alert('Xoá thất bại!');
+
+        if (error.response && error.response.data && error.response.data.error) {
+          toast.error(error.response.data.error);
+        } else {
+          toast.error('Xoá thất bại!');
+        }
       }
     }
   };

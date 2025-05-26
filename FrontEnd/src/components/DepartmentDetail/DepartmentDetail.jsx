@@ -1,18 +1,20 @@
-import {useParams} from 'react-router-dom';
 import {useEffect, useState} from 'react';
 import axios from 'axios';
-import styles from './styles.module.scss'; 
+import styles from './styles.module.scss';
 import CartEmployee from '../CartEmployee/CartEmployee';
 
-function DepartmentDetail() {
-  const {id} = useParams(); 
+function DepartmentDetail({id, onBack}) {
   const [employees, setEmployees] = useState([]);
-
+  const [departmentName, setDepartmentName] = useState('');
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
         const res = await axios.get(`http://localhost:3000/api/getDepartment/${id}`);
-        setEmployees(res.data);
+        const employeesData = res.data;
+        setEmployees(employeesData);
+        if (employeesData.length>0){
+          setDepartmentName(employeesData[0].DepartmentName)
+        }
       } catch (err) {
         console.error('Lỗi khi lấy dữ liệu nhân viên:', err);
       }
@@ -22,14 +24,14 @@ function DepartmentDetail() {
 
   return (
     <div className={styles.detailWrapper}>
-      <h2>Danh sách nhân viên phòng ban {id}</h2>
+      <button onClick={onBack}>← Quay lại danh sách</button>
+      <h2>{departmentName}</h2>
       <div className={styles.employeeList}>
         {employees.map((emp) => (
-            <CartEmployee key={emp.EmployeeID} employee={emp}/>
+          <CartEmployee key={emp.EmployeeID} employee={emp} />
         ))}
       </div>
     </div>
   );
 }
-
 export default DepartmentDetail;

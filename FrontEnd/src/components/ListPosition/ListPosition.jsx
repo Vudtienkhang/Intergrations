@@ -4,10 +4,12 @@ import styles from './styles.module.scss';
 import {MdBrowserUpdated} from 'react-icons/md';
 import {MdDeleteOutline} from 'react-icons/md';
 import {IoAdd} from 'react-icons/io5';
+import {useContext} from 'react';
+import {ToastContext} from '../../Contexts/ToastProvider';
 
 function ListPosition() {
   const {listPosition, table, filterSection, actionBtn, editBtn, deleteBtn, modal, modalContent, modalActions, container_table} = styles;
-
+  const {toast} = useContext(ToastContext);
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,11 +43,12 @@ function ListPosition() {
   const handleUpdate = async () => {
     try {
       await axios.post(`http://localhost:3000/api/updatePosition/${editing.PositionID}`, editing);
+      console.success('Cập nhật thành công!!');
       setEditing(null);
       fetchData();
     } catch (error) {
       console.error('Lỗi khi cập nhật chức danh:', error);
-      alert('Cập nhật thất bại!');
+      toast.error('Cập nhật thất bại!');
     }
   };
 
@@ -54,17 +57,19 @@ function ListPosition() {
 
     try {
       await axios.delete(`http://localhost:3000/api/deletePosition/${id}`);
+      toast.success('Xoá thành công!');
       fetchData();
     } catch (error) {
+      const errMsg = error?.response?.data?.error || 'Có lỗi xảy ra!';
+      toast.error(`Xoá thất bại: ${errMsg}`);
       console.error('Lỗi khi xoá:', error);
-      alert('Xoá thất bại!');
     }
   };
 
   const handleAddPosition = async () => {
     const {PositionName, Description, MinSalary, MaxSalary} = newPosition;
-    if (!PositionName || !MinSalary || !MaxSalary) {
-      alert('Vui lòng nhập đầy đủ tên và lương!');
+    if (!PositionName || MinSalary === '' || MaxSalary === '') {
+      toast.error('Vui lòng nhập đầy đủ các trường!');
       return;
     }
 
@@ -75,14 +80,13 @@ function ListPosition() {
         MinSalary: parseInt(MinSalary),
         MaxSalary: parseInt(MaxSalary),
       });
-
       setNewPosition({PositionName: '', Description: '', MinSalary: '', MaxSalary: ''});
       setShowAddModal(false);
       fetchData();
-      alert('Thêm chức danh thành công!');
+      toast.success('Thêm chức danh thành công!');
     } catch (error) {
       console.error('Lỗi thêm chức danh:', error);
-      alert('Thêm thất bại!');
+      toast.error('Thêm thất bại!');
     }
   };
 
@@ -168,7 +172,8 @@ function ListPosition() {
               <th>Position Name</th>
               <th>Description</th>
               <th>Range Salary</th>
-              <th>Actions</th>
+              <th></th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -185,6 +190,8 @@ function ListPosition() {
                     <button className={`${actionBtn} ${editBtn}`} onClick={() => setEditing({...pos})}>
                       <MdBrowserUpdated size={'24px'} />
                     </button>
+                  </td>
+                  <td>
                     <button className={`${actionBtn} ${deleteBtn}`} onClick={() => handleDelete(pos.PositionID)}>
                       <MdDeleteOutline size={'24px'} />
                     </button>

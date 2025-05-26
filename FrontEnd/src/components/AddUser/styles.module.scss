@@ -1,4 +1,5 @@
 .add_user_container {
+
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -8,6 +9,8 @@
 }
 
 .add_user_left {
+    max-height: 700px;
+  overflow-y: auto;
   position: relative;
   background: #fff;
   padding: 40px;

@@ -9,6 +9,7 @@ function Timekeeping() {
   const [status, setStatus] = useState('Chưa chấm công');
   const [buttonsVisible, setButtonsVisible] = useState(true);
   const [timekeepingData, setTimekeepingData] = useState([]);
+  const [salaryData, setSalaryData] = useState([]);
   const employeeId = JSON.parse(localStorage.getItem('user'))?.id;
 
   const getCurrentDate = () => {
@@ -19,15 +20,53 @@ function Timekeeping() {
   const fetchTimekeepingData = async () => {
     try {
       const res = await axios.get(`http://localhost:3000/api/getTimekeepingByEmployee/${employeeId}`);
-      setTimekeepingData(res.data);
+      const data = res.data;
+
+      const grouped = {};
+
+      data.forEach((item) => {
+        const month = new Date(item.AttendanceDate).toISOString().slice(0, 7);
+
+        if (!grouped[month]) {
+          grouped[month] = {
+            Month: month,
+            TotalWorkDays: 0,
+            TotalLeaveDays: 0,
+            TotalAbsentDays: 0,
+          };
+        }
+
+        grouped[month].TotalWorkDays += item.WorkDays;
+        grouped[month].TotalLeaveDays += item.LeaveDays;
+        grouped[month].TotalAbsentDays += item.AbsentDays;
+      });
+      const mappedData = Object.values(grouped);
+
+      console.log('Mapped timekeeping data:', mappedData);
+      setTimekeepingData(mappedData);
     } catch (error) {
       console.error('Lỗi lấy dữ liệu chấm công:', error);
     }
   };
 
+  const fetchSalaryData = async () => {
+    try {
+      const res = await axios.get(`http://localhost:3000/api/getSalaryByEmployeeID`, {
+        params: {employeeID: employeeId},
+      });
+      setSalaryData(res.data);
+    } catch (error) {
+      console.error('Lỗi lấy dữ liệu lương:', error);
+    }
+  };
+
+  const fetchAll = async () => {
+    await Promise.all([fetchTimekeepingData(), fetchSalaryData()]);
+  };
+
   useEffect(() => {
     if (employeeId) {
-      fetchTimekeepingData();
+      fetchAll();
     }
   }, [employeeId]);
 
@@ -45,9 +84,9 @@ function Timekeeping() {
         date: today,
       });
       setStatus(res.data.message);
-      setButtonsVisible(false);
+      await fetchAll();
 
-      await fetchTimekeepingData();
+      setButtonsVisible(false);
     } catch (err) {
       if (err.response && err.response.data?.message === 'Đã chấm công hôm nay!') {
         setStatus('Bạn đã chấm công hôm nay rồi!');
@@ -85,7 +124,7 @@ function Timekeeping() {
         </div>
       </div>
       <div className={styles.salaryChart}>
-        <SalaryChart data={timekeepingData} />
+        <SalaryChart data={salaryData} />
       </div>
     </div>
   );
